@@ -169,7 +169,8 @@ public:
     }
     
     /**
-     * Update the model and finalize.
+     * Update the model and finalize. Sets the parameter values and evaluates the
+     * portable model once and transfers values back to the Rcpp interface.
      */
     void finalize(Rcpp::NumericVector v){
         VonBertalanffyModel<double>* model =
