@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1642628302942.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "BF2C4B04",
+    "lastKnownWriteTime" : 1643037566,
+    "last_content_update" : 1643037566396,
+    "path" : "~/Rprojects/ModularTMBExample/src/tmb_objective_function.cpp",
+    "project_path" : "src/tmb_objective_function.cpp",
+    "properties" : {
+        "cursorPosition" : "1,3",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "cpp"
+}

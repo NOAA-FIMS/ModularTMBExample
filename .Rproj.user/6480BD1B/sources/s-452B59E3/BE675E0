@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1642698948511.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "BE675E0",
+    "lastKnownWriteTime" : 1625739822,
+    "last_content_update" : 1625739822,
+    "path" : "/Library/Frameworks/R.framework/Versions/4.0/Resources/library/Rcpp/include/Rcpp.h",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "77,0",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 10,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "h"
+}

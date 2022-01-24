@@ -1,0 +1,74 @@
+# A simple example showing how to use portable models
+# with Rcpp and TMB
+
+library(TMB)
+library(Rcpp)
+library(ModularTMBExample)
+
+#get the Rcpp module
+g<-Rcpp::Module(module = "growth",PACKAGE = "ModularTMBExample")
+
+#simulate data
+l_inf<- 10.0
+a_min<- 0.1
+k<- .5
+ages<-c(0.1, 1,2,3,4,5,6,7,8)
+data<-replicate(length(ages), 0.0)
+
+for(i in 1:length(ages)){
+  data[i] = (l_inf * (1.0 - exp(-k * (ages[i] - a_min))))*runif(1,.95,1.1)
+}
+
+#clear the parameter list, if ther already is one
+g$clear();
+
+#create a von Bertalanffy object
+vonB<-new(g$vonBertalanffy)
+
+#initialize k
+vonB$k$value<-.05
+vonB$k$estimable<-TRUE
+
+#initialize a_min
+vonB$a_min$value<-.01
+vonB$a_min$estimable<-FALSE
+
+#initialize l_inf
+vonB$l_inf$value<-7
+vonB$l_inf$estimable<-TRUE
+
+#set data
+vonB$data <-data
+
+#set ages 
+vonB$ages<-ages
+
+#prepare for interfacing with TMB
+vonB$prepare()
+
+#create an empty data list (data set above)
+data <- list()
+
+#create a parameter list
+parameters <- list(
+  p = g$get_parameter_vector()
+)
+
+#make the AD function in TMB
+obj <- MakeADFun(data, parameters, DLL="ModularTMBExample")
+newtonOption(obj, smartsearch=FALSE)
+
+## Fit model
+system.time(opt <- nlminb(obj$par, obj$fn, obj$gr))
+rep <- sdreport(obj)
+
+#update the von Bertalanffy object with updated parameters
+vonB$finalize(rep$par.fixed)
+
+#show results
+vonB$show()
+
+#show final gradient
+print("final gradient:")
+print(rep$gradient.fixed)
+

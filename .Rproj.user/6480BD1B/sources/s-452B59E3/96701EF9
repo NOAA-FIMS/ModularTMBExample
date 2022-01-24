@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1642691642132.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "96701EF9",
+    "lastKnownWriteTime" : 1642695504,
+    "last_content_update" : 1642695504709,
+    "path" : "~/Rprojects/ModularTMBExample/DESCRIPTION",
+    "project_path" : "DESCRIPTION",
+    "properties" : {
+        "cursorPosition" : "12,13",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "dcf"
+}

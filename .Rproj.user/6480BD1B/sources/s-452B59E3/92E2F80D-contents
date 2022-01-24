@@ -1,0 +1,46 @@
+
+#include <Rcpp.h>
+#include <vector>
+using namespace Rcpp;
+
+
+
+
+class Parameter{
+public:
+  static std::vector<Parameter*> parameters;
+  bool estimable = true;
+  double value = 0;
+  
+  Parameter(){
+    Parameter::parameters.push_back(this);
+  }
+  
+};
+
+std::vector<Parameter*> Parameter::parameters;
+
+Rcpp::NumericVector get_parameter_vector(){
+  Rcpp::NumericVector p;
+  
+  for(int i =0; i < Parameter::parameters.size(); i++){
+    if(Parameter::parameters[i]->estimable){
+    p.push_back(Parameter::parameters[i]->value);
+    }
+  }
+  return p;
+}
+
+void clear(){
+  Parameter::parameters.clear();
+}
+
+RCPP_MODULE(plist) {
+  class_<Parameter>("Parameter")
+  .constructor()
+  .field("value", &Parameter::value)
+  .field("estimable",&Parameter::estimable);
+  function("get_parameter_vector", get_parameter_vector);
+  function("clear", clear);
+}
+

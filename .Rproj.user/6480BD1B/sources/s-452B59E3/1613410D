@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1642689094702.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1914309724",
+    "id" : "1613410D",
+    "lastKnownWriteTime" : 1643037661,
+    "last_content_update" : 1643037661655,
+    "path" : "~/Rprojects/ModularTMBExample/src/interface.hpp",
+    "project_path" : "src/interface.hpp",
+    "properties" : {
+        "cursorPosition" : "27,31",
+        "scrollLine" : "17",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "hpp"
+}

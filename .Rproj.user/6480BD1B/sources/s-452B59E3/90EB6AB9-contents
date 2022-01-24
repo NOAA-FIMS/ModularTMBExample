@@ -1,0 +1,22 @@
+library(ParameterList)
+
+plist <- Rcpp::Module("plist", PACKAGE = "ParameterList")
+
+parameter1<-new(plist$Parameter)
+parameter1$value<-3.1459
+parameter1$estimable<-TRUE
+
+parameter2<-new(plist$Parameter)
+parameter2$value<-3.1459*2
+parameter2$estimable<-TRUE
+
+parameter3<-new(plist$Parameter)
+parameter3$value<-3.1459*2
+parameter3$estimable<-FALSE
+
+parameter4<-new(plist$Parameter)
+parameter4$value<-3.1459*3
+parameter4$estimable<-TRUE
+
+print(plist$get_parameter_vector())
+plist$clear()
