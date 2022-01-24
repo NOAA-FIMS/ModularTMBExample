@@ -19,7 +19,7 @@ for(i in 1:length(ages)){
   data[i] = (l_inf * (1.0 - exp(-k * (ages[i] - a_min))))*runif(1,.95,1.1)
 }
 
-#clear the parameter list, if ther already is one
+#clear the parameter list, if there already is one
 g$clear();
 
 #create a von Bertalanffy object
