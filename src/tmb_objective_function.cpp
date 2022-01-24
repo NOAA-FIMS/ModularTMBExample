@@ -44,7 +44,7 @@ public:
     Variable beta;
     
     /**
-     *Prepares the model to work with TMB.
+     * Prepares the model to work with TMB.
      */
     void prepare(){
         
@@ -169,7 +169,7 @@ public:
     }
     
     /**
-     *Update the model and finalize.
+     * Update the model and finalize.
      */
     void finalize(Rcpp::NumericVector v){
         VonBertalanffyModel<double>* model =
