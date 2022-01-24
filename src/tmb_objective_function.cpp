@@ -227,13 +227,15 @@ Type objective_function<Type>::operator()(){
   VonBertalanffyModel<Type>* model =
     VonBertalanffyModel<Type>::getInstance();
   
-  std::cout<<"data size = "<<model->data.size()<<"\n\n";
+  //get the parameter values
   PARAMETER_VECTOR(p)
     
+  //update the parameter values for type Type
   for(int i =0; i < model->parameters.size(); i++){
      *model->parameters[i] = p[i]; 
   }
   
+  //evaluate the model objective function
   return model->evaluate();
 }
 
