@@ -219,11 +219,14 @@ void clear(){
 }
 
 
-
+/**
+ * TMB objective function. Calls the portable von Bertalanffy
+ * function.
+ */
 template<typename Type>
 Type objective_function<Type>::operator()(){
 
-  
+  //get the singleton instance for type Type
   VonBertalanffyModel<Type>* model =
     VonBertalanffyModel<Type>::getInstance();
   
