@@ -5,11 +5,12 @@
 
 #include <iomanip>
 #include <iostream>
-#include "von_bertalanffy.hpp"
-#include "init.hpp"
 
 #define RCPP_NO_SUGAR
 #include <Rcpp.h>
+
+#include "von_bertalanffy.hpp"
+#include "init.hpp"
 
 
 /**
