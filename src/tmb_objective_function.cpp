@@ -233,7 +233,12 @@ void clear(){
 
 /**
  * TMB objective function. Calls the portable von Bertalanffy
- * function.
+ * object. TMB template specifications (see lines 56 -66):
+ *  1. double
+ *  2. AD<double>
+ *  3. AD<AD<double> >
+ *  4. AD<AD<AD<double> > >
+ *
  */
 template<typename Type>
 Type objective_function<Type>::operator()(){
@@ -250,7 +255,7 @@ Type objective_function<Type>::operator()(){
         *model->parameters[i] = p[i];
     }
     
-    //evaluate the model objective function
+    //evaluate the model objective function value
     return model->evaluate();
 }
 
