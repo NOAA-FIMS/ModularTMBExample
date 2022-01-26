@@ -233,12 +233,12 @@ void clear(){
 
 /**
  * TMB objective function. Calls the portable von Bertalanffy
- * object. TMB template specifications (see lines 56 -66):
+ * object.
+ * TMB template specifications (see lines 56 -66):
  *  1. double
  *  2. AD<double>
  *  3. AD<AD<double> >
  *  4. AD<AD<AD<double> > >
- *
  */
 template<typename Type>
 Type objective_function<Type>::operator()(){
