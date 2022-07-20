@@ -13,6 +13,7 @@ l_inf<- 10.0
 a_min<- 0.1
 k<- .5
 ages<-c(0.1, 1,2,3,4,5,6,7,8)
+#data<-c(replicate(length(ages), 0.0), 0.0)
 data<-replicate(length(ages), 0.0)
 
 for(i in 1:length(ages)){
