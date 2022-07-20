@@ -53,6 +53,10 @@ public:
             std::cout<<"Error: ages vector length not equal to data vector length, abort\n";
             return;
         }
+
+        // if(this->data.size() != this->ages.size()){
+        //     Rcpp::stop("ages vector length not equal to data vector length");
+        // }
         
         VonBertalanffyModel<double>* model_1 =
         VonBertalanffyModel<double>::getInstance();
@@ -196,13 +200,23 @@ public:
      * Print model values.
      */
     void show_(){
-        std::cout<<"vonBertalanffy:\n";
-        std::cout<<"k = "<<this->k.value<<"\n";
-        std::cout<<"a_min = "<<this->a_min.value<<"\n";
-        std::cout<<"l_inf = "<<this->l_inf.value<<"\n";
-        std::cout<<std::setw(15)<<"observed  "<<std::setw(15)<<"predicted\n";
+        // std::cout<<"vonBertalanffy:\n";
+        // std::cout<<"k = "<<this->k.value<<"\n";
+        // std::cout<<"a_min = "<<this->a_min.value<<"\n";
+        // std::cout<<"l_inf = "<<this->l_inf.value<<"\n";
+        // std::cout<<std::setw(15)<<"observed  "<<std::setw(15)<<"predicted\n";
+        // for(int i =0; i < this->predicted.size(); i++){
+        //     std::cout<<std::setw(15)<<this->data[i]<<std::setw(15)<<this->predicted[i]<<"\n";
+        // }
+        
+        
+        Rcout<<"vonBertalanffy:\n";
+        Rcout<<"k = "<<this->k.value<<"\n";
+        Rcout<<"a_min = "<<this->a_min.value<<"\n";
+        Rcout<<"l_inf = "<<this->l_inf.value<<"\n";
+        Rcout<<std::setw(15)<<"observed  "<<std::setw(15)<<"predicted\n";
         for(int i =0; i < this->predicted.size(); i++){
-            std::cout<<std::setw(15)<<this->data[i]<<std::setw(15)<<this->predicted[i]<<"\n";
+            Rcout<<std::setw(15)<<this->data[i]<<std::setw(15)<<this->predicted[i]<<"\n";
         }
         
     }
