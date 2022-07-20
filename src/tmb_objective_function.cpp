@@ -49,14 +49,14 @@ public:
      */
     void prepare(){
         
-        if(this->data.size() != this->ages.size()){
-            std::cout<<"Error: ages vector length not equal to data vector length, abort\n";
-            return;
-        }
-
         // if(this->data.size() != this->ages.size()){
-        //     Rcpp::stop("ages vector length not equal to data vector length");
+        //     std::cout<<"Error: ages vector length not equal to data vector length, abort\n";
+        //     return;
         // }
+
+        if(this->data.size() != this->ages.size()){
+            Rcpp::stop("ages vector length not equal to data vector length");
+        }
         
         VonBertalanffyModel<double>* model_1 =
         VonBertalanffyModel<double>::getInstance();
