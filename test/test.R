@@ -55,21 +55,28 @@ parameters <- list(
   p = g$get_parameter_vector()
 )
 
+#gradients aren't accessible when using TMBad:
 #make the AD function in TMB
 obj <- MakeADFun(data, parameters, DLL="ModularTMBExample")
 newtonOption(obj, smartsearch=FALSE)
 
+obj$gr(obj$par)
+
 ## Fit model
-system.time(opt <- nlminb(obj$par, obj$fn, obj$gr))
+opt <- nlminb(obj$par, obj$fn, obj$gr)
 rep <- sdreport(obj)
+
+rep
 
 #update the von Bertalanffy object with updated parameters
 vonB$finalize(rep$par.fixed)
 
 #show results
 vonB$show()
+obj$report()
 
 #show final gradient
 print("final gradient:")
 print(rep$gradient.fixed)
+
 
