@@ -12,15 +12,20 @@ template<typename Type>
 class VonBertalanffyModel{
 public:
   //using traits for modeling platform specific structures
-  typename model_traits<Type>::data_vector data;
+  typename model_traits<Type>::data_vector obs;
   std::vector<Type> predicted;
   std::vector<double> ages;
+  std::vector<int> fish;
   std::vector<Type*> parameters;
-  Type k;
-  Type l_inf;
+  int nfish;
+  Type log_k_mean;
+  Type log_l_inf_mean;
+  Type log_k_sigma;
+  Type log_l_inf_sigma;
   Type a_min;
-  Type alpha;
-  Type beta;
+  vector<Type> log_k;
+  vector<Type> log_l_inf;
+  
   //singleton instance based on Type
   static VonBertalanffyModel<Type>* instance;
   
@@ -41,10 +46,17 @@ public:
       this->predicted.resize(ages.size());
     }
     Type norm2 = 0.0;
-    for(int i =0; i < ages.size(); i++){
-        Type temp = this->l_inf * (1.0 - exp(-k * (ages[i] - this->a_min)));
-        this->predicted[i] = temp;
-        norm2+=(temp-data[i])*(temp-data[i]);
+    for(int i =0; i < obs.size(); i++){
+      Type linf=exp(this->log_l_inf_mean + this->log_l_inf[this->fish[i]]);
+      Type k=exp(this->log_k_mean + this->log_k[this->fish[i]]);
+      Type temp = linf*(1.0-exp(-k*(ages[i]-this->a_min)));
+      this->predicted[i] = temp;
+      norm2+=(temp-obs[i])*(temp-obs[i])/(2*.1*.1);
+    }
+    // probability of the random effects
+    for(int i=0;i<nfish;i++){
+      norm2+= log_l_inf[i]/(2*pow(exp(log_l_inf_sigma),2));
+      norm2+= log_k[i]/(2*pow(exp(log_k_sigma),2));
     }
     return norm2;
   }
