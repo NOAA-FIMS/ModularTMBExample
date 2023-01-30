@@ -73,36 +73,35 @@ public:
         VonBertalanffyModel<Type>* model =
         VonBertalanffyModel<Type>::getInstance();
         
-        model->clear();
+        // model->clear();
         
         model->predicted.resize(this->obs.size());
-        
         model->ages.resize(this->ages.size());
         model->obs.resize(this->obs.size());
-        
         for(int i =0; i < this->obs.size(); i++){
             model->ages[i] = this->ages[i];
             model->obs[i] = this->obs[i];
         }
-        
+	model->nfish = this->nfish;
+
+        //initialize a_min
+        model->a_min = this->a_min.value;
         //initialize k
         model->log_k_mean = this->log_k_mean.value;
 	model->log_k_sigma = this->log_k_sigma.value;
-
         //initialize l_inf
         model->log_l_inf_mean = this->log_l_inf_mean.value;
 	model->log_l_inf_sigma = this->log_l_inf_sigma.value;
+	model->log_k.resize(this->log_k.size());
+	model->log_l_inf.resize(this->log_l_inf.size());
 	// model->log_l_inf = this->log_l_inf;
 	// model->log_k = this->log_k;
 	
-	for(int i=0; i<nfish;i++){
+	for(int i=0; i< nfish; i++){
 	  model->log_l_inf[i] = this->log_l_inf[i];
 	  model->log_k[i] = this->log_k[i];
 	}
-        
-        //initialize a_min
-        model->a_min = this->a_min.value;
-        
+ 
         
         if(this->log_k_mean.estimable){
             model->parameters.push_back(&model->log_k_mean);
@@ -116,7 +115,7 @@ public:
         if(this->log_l_inf_sigma.estimable){
             model->parameters.push_back(&model->log_l_inf_sigma);
         }
-	for(int i=0; i<nfish;i++){
+	for(int i=0; i<this->nfish;i++){
 	  // if(this->log_k[i].estimable){
             model->parameters.push_back(&model->log_k[i]);
 	    // }

@@ -33,42 +33,33 @@ g
 
 #get the Rcpp module
 g<-Rcpp::Module(module = "growth",PACKAGE = "ModularTMBExample")
-
-data <- list(obs=obs$obs, fish=obs$fish)
-
+data <- list(obs=obs$obs, fish=obs$fish, age=obs$age)
 #clear the parameter list, if there already is one
 g$clear();
-
 #create a von Bertalanffy object
 vonB<-new(g$vonBertalanffy)
-
-
 #initialize k
 vonB$log_k_mean$value<-log(.05)
 vonB$log_k_mean$estimable<-TRUE
 vonB$log_k_sigma$value <- log(1)
 vonB$log_k_sigma$estimable<-TRUE
-vonB$log_k <- rep(0, nfish)
+vonB$log_k <- rep(.1, nfish)
 vonB$log_l_inf_mean$value<-log(20)
 vonB$log_l_inf_mean$estimable<-TRUE
 vonB$log_l_inf_sigma$value <- log(1)
 vonB$log_l_inf_sigma$estimable<-TRUE
 vonB$log_l_inf <- rep(0, nfish)
-
-#initialize a_min
 vonB$a_min$value<-0
 vonB$a_min$estimable<-FALSE
-
-
 #set data
 vonB$obs <-data$obs
 vonB$nfish <- nfish
-vonB$fish <- data$fish
+vonB$fish <- data$fish-1
+vonB$ages<- data$age
+vonB$predicted <- rep(0,len=nrow(obs))
+str(vonB)
 
-#set ages
-vonB$ages<-ages
-
-#prepare for interfacing with TMB
+##prepare for interfacing with TMB
 vonB$prepare()
 
 #create an empty data list (data set above)
