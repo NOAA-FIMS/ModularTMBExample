@@ -21,7 +21,7 @@ class Variable{
 public:
     static std::vector<Variable*> parameters;
     static std::vector<Variable*> estimated_parameters;
-    bool estimable = FALSE;
+    bool estimable = false;
     double value = 0;
     
     Variable(){
@@ -30,8 +30,23 @@ public:
     
 };
 
+class Variable2{
+public:
+  static std::vector<Variable2*> parameters;
+  static std::vector<Variable2*> estimated_parameters;
+  std::vector<bool> estimable;
+  std::vector<double> value;
+  bool initialized=false;
+  Variable2(){
+    Variable2::parameters.push_back(this);
+  }
+    
+};
+
 std::vector<Variable*> Variable::parameters;
 std::vector<Variable*> Variable::estimated_parameters;
+std::vector<Variable2*> Variable2::parameters;
+std::vector<Variable2*> Variable2::estimated_parameters;
 
 class vonBertalanffyInterface{
 public:
@@ -41,17 +56,19 @@ public:
     Rcpp::IntegerVector fish;
     int nfish;
     Variable a_min;
-    Rcpp::NumericVector log_l_inf;
+    Variable2 log_l_inf;
     Variable log_l_inf_sigma;
     Variable log_l_inf_mean; 
-  Rcpp::NumericVector log_k;
-  Variable log_k_sigma;
+    Variable2 log_k;
+    Variable log_k_sigma;
     Variable log_k_mean; 
 
     static vonBertalanffyInterface* instance;
     vonBertalanffyInterface(){
         instance = this;
     }
+
+  
     /**
      * Prepares the model to work with TMB.
      */
@@ -78,6 +95,7 @@ public:
         model->predicted.resize(this->obs.size());
         model->ages.resize(this->ages.size());
         model->obs.resize(this->obs.size());
+	model->fish.resize(this->fish.size());
         for(int i =0; i < this->obs.size(); i++){
             model->ages[i] = this->ages[i];
             model->obs[i] = this->obs[i];
@@ -92,14 +110,14 @@ public:
         //initialize l_inf
         model->log_l_inf_mean = this->log_l_inf_mean.value;
 	model->log_l_inf_sigma = this->log_l_inf_sigma.value;
-	model->log_k.resize(this->log_k.size());
-	model->log_l_inf.resize(this->log_l_inf.size());
+	model->log_k.resize(this->log_k.value.size());
+	model->log_l_inf.resize(this->log_l_inf.value.size());
 	// model->log_l_inf = this->log_l_inf;
 	// model->log_k = this->log_k;
 	
 	for(int i=0; i< nfish; i++){
-	  model->log_l_inf[i] = this->log_l_inf[i];
-	  model->log_k[i] = this->log_k[i];
+	  model->log_l_inf[i] = this->log_l_inf.value[i];
+	  model->log_k[i] = this->log_k.value[i];
 	}
  
         
@@ -116,19 +134,19 @@ public:
             model->parameters.push_back(&model->log_l_inf_sigma);
         }
 	for(int i=0; i<this->nfish;i++){
-	  // if(this->log_k[i].estimable){
+	   if(this->log_k.estimable[i]){
             model->parameters.push_back(&model->log_k[i]);
-	    // }
-	    // if(this->log_l_inf[i].estimable){
+	   }
+	   if(this->log_l_inf.estimable[i]){
             model->parameters.push_back(&model->log_l_inf[i]);
-	    //  }
+	   } 
 	}
         if(this->a_min.estimable){
             model->parameters.push_back(&model->a_min);
         }
-        
+	Rcpp::Rcout << "eval=" << model->evaluate() << "\n" ;
     }
-    
+     
     /**
      * Update the model parameter values and finalize. Sets the parameter values and evaluates the
      * portable model once and transfers values back to the Rcpp interface.
@@ -190,21 +208,31 @@ vonBertalanffyInterface* vonBertalanffyInterface::instance = NULL;
  * Exposes the Variable and vonBertalanffyInterface classes to R.
  */
 RCPP_EXPOSED_CLASS(Variable)
+RCPP_EXPOSED_CLASS(Variable2)
 RCPP_EXPOSED_CLASS(vonBertalanffyInterface)
 
 /**
  * Returns the initial values for the parameter set
  */
 Rcpp::NumericVector get_parameter_vector(){
-    Rcpp::NumericVector p;
+  Rcpp::NumericVector p;
     
-    for(int i =0; i < Variable::parameters.size(); i++){
-        if(Variable::parameters[i]->estimable){
-            Variable::estimated_parameters.push_back(Variable::parameters[i]);
-            p.push_back(Variable::parameters[i]->value);
-        }
+  for(int i =0; i < Variable::parameters.size(); i++){
+    if(Variable::parameters[i]->estimable){
+      Variable::estimated_parameters.push_back(Variable::parameters[i]);
+      p.push_back(Variable::parameters[i]->value);
     }
-    return p;
+  }
+  for(int i =0; i < Variable2::parameters.size(); i++){
+    //      if(Variable2::parameters[i]->estimable[1]){
+    std::vector<double> temp=Variable2::parameters[i]->value;
+    for(int j=0; j<temp.size();j++){
+      Variable2::estimated_parameters.push_back(Variable2::parameters[i]);
+      p.push_back(Variable2::parameters[i]->value[j]);
+    }
+    // }
+  }
+  return p;
 }
 /**
  * Clears the vector of independent variables.
@@ -222,6 +250,11 @@ RCPP_MODULE(growth) {
     .constructor()
     .field("value", &Variable::value)
     .field("estimable",&Variable::estimable);
+    Rcpp::class_<Variable2>("Variable2")
+    .constructor()
+    .field("value", &Variable2::value)
+    .field("estimable",&Variable2::estimable)
+    .field("initialized",&Variable2::initialized); 
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
     .constructor()
     .method("prepare", &vonBertalanffyInterface::prepare)

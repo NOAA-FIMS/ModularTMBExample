@@ -28,7 +28,7 @@ obs <- lapply(1:nfish, function(i)
   mutate(obs=length*exp(rnorm(nfish*nreps,0-.05^2/2,.05)))
 g <- ggplot(obs, aes(age, length)) + geom_line() +
   geom_point(mapping=aes(y=obs), col=2) + facet_wrap('fish')
-g
+## g
 
 
 #get the Rcpp module
@@ -43,12 +43,12 @@ vonB$log_k_mean$value<-log(.05)
 vonB$log_k_mean$estimable<-TRUE
 vonB$log_k_sigma$value <- log(1)
 vonB$log_k_sigma$estimable<-TRUE
-vonB$log_k <- rep(.1, nfish)
+for(i in 1:nfish) vonB$log_k$value[i] <- 0
 vonB$log_l_inf_mean$value<-log(20)
 vonB$log_l_inf_mean$estimable<-TRUE
 vonB$log_l_inf_sigma$value <- log(1)
 vonB$log_l_inf_sigma$estimable<-TRUE
-vonB$log_l_inf <- rep(0, nfish)
+for(i in 1:nfish) vonB$log_l_inf$value[i] <- 0
 vonB$a_min$value<-0
 vonB$a_min$estimable<-FALSE
 #set data
@@ -57,6 +57,8 @@ vonB$nfish <- nfish
 vonB$fish <- data$fish-1
 vonB$ages<- data$age
 vonB$predicted <- rep(0,len=nrow(obs))
+vonB$log_k$estimable <- rep(TRUE, nfish)
+vonB$log_l_inf$estimable <- rep(TRUE, nfish)
 str(vonB)
 
 ##prepare for interfacing with TMB
@@ -70,8 +72,12 @@ parameters <- list(
   p = g$get_parameter_vector()
 )
 
+vonB$evaluate()
+
 #make the AD function in TMB
 obj <- MakeADFun(data, parameters, DLL="ModularTMBExample")
+obj$fn()
+obj$gr()
 newtonOption(obj, smartsearch=FALSE)
 
 ## Fit model
