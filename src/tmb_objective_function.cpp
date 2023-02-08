@@ -30,24 +30,24 @@ public:
 
 };
 
-class Variable2 {
-public:
-    static std::vector<Variable2*> parameters;
-    static std::vector<Variable2*> estimated_parameters;
-    std::vector<bool> estimable;
-    std::vector<double> value;
-    bool initialized = false;
-
-    Variable2() {
-        Variable2::parameters.push_back(this);
-    }
-
-};
+//class Variable2 {
+//public:
+//    static std::vector<Variable2*> parameters;
+//    static std::vector<Variable2*> estimated_parameters;
+//    std::vector<bool> estimable;
+//    std::vector<double> value;
+//    bool initialized = false;
+//
+//    Variable2() {
+//        Variable2::parameters.push_back(this);
+//    }
+//
+//};
 
 std::vector<Variable*> Variable::parameters;
 std::vector<Variable*> Variable::estimated_parameters;
-std::vector<Variable2*> Variable2::parameters;
-std::vector<Variable2*> Variable2::estimated_parameters;
+//std::vector<Variable2*> Variable2::parameters;
+//std::vector<Variable2*> Variable2::estimated_parameters;
 
 class vonBertalanffyInterface {
 public:
@@ -296,11 +296,11 @@ RCPP_MODULE(growth) {
             .constructor()
             .field("value", &Variable::value)
             .field("estimable", &Variable::estimable);
-    Rcpp::class_<Variable2>("Variable2")
-            .constructor()
-            .field("value", &Variable2::value)
-            .field("estimable", &Variable2::estimable)
-            .field("initialized", &Variable2::initialized);
+//    Rcpp::class_<Variable2>("Variable2")
+//            .constructor()
+//            .field("value", &Variable2::value)
+//            .field("estimable", &Variable2::estimable)
+//            .field("initialized", &Variable2::initialized);
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
             .constructor()
             .method("prepare", &vonBertalanffyInterface::prepare)
