@@ -14,6 +14,8 @@ public:
   //using traits for modeling platform specific structures
   typename model_traits<Type>::data_vector obs;
   std::vector<Type> predicted;
+  std::vector<Type> linf;
+  std::vector<Type> k;
   std::vector<double> ages;
   std::vector<int> fish;
   std::vector<Type*> parameters;
@@ -45,12 +47,14 @@ public:
   Type evaluate(){
     if(this->predicted.size()==0){
       this->predicted.resize(ages.size());
-    } 
+    }
+    this->linf.resize(ages.size());
+    this->k.resize(ages.size());
     Type norm2 = 0.0;
     for(int i =0; i< obs.size(); i++){
-      Type linf=exp(this->log_l_inf_mean + this->log_l_inf[this->fish[i]]);
-      Type k=exp(this->log_k_mean + this->log_k[this->fish[i]]);
-      Type temp = linf*(1.0-exp(-k*(ages[i]-this->a_min)));
+      this->linf[i]=exp(this->log_l_inf_mean + this->log_l_inf[this->fish[i]]);
+      this->k[i]=exp(this->log_k_mean + this->log_k[this->fish[i]]);
+      Type temp = this->linf[i]*(1.0-exp(-this->k[i]*(ages[i]-this->a_min)));
       this->predicted[i] = temp;
       norm2+=(temp-obs[i])*(temp-obs[i])/(2*.1*.1);
     } 

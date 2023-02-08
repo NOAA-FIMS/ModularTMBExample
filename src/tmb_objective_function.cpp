@@ -1,4 +1,4 @@
-/**
+/** 
  * Simple example showing how to interface TMB with portable
  * models and Rcpp objects.
  */
@@ -53,6 +53,8 @@ public:
     Rcpp::NumericVector obs;
     Rcpp::NumericVector ages;
     Rcpp::NumericVector predicted;
+  Rcpp::NumericVector linf;
+  Rcpp::NumericVector k;
     Rcpp::IntegerVector fish;
     int nfish;
     Variable a_min;
@@ -93,6 +95,8 @@ public:
         // model->clear();
         
         model->predicted.resize(this->obs.size());
+	model->linf.resize(this->obs.size());
+	model->k.resize(this->obs.size());
         model->ages.resize(this->ages.size());
         model->obs.resize(this->obs.size());
 	model->fish.resize(this->fish.size());
@@ -144,7 +148,6 @@ public:
         if(this->a_min.estimable){
             model->parameters.push_back(&model->a_min);
         }
-	Rcpp::Rcout << "eval=" << model->evaluate() << "\n" ;
     }
      
     /**
@@ -227,8 +230,10 @@ Rcpp::NumericVector get_parameter_vector(){
     //      if(Variable2::parameters[i]->estimable[1]){
     std::vector<double> temp=Variable2::parameters[i]->value;
     for(int j=0; j<temp.size();j++){
-      Variable2::estimated_parameters.push_back(Variable2::parameters[i]);
-      p.push_back(Variable2::parameters[i]->value[j]);
+      if(Variable2::parameters[i]->estimable[j]){
+	Variable2::estimated_parameters.push_back(Variable2::parameters[i]);
+	p.push_back(Variable2::parameters[i]->value[j]);
+      }
     }
     // }
   }
@@ -271,7 +276,9 @@ RCPP_MODULE(growth) {
     .field("obs", &vonBertalanffyInterface::obs)
     .field("nfish", &vonBertalanffyInterface::nfish)
     .field("fish", &vonBertalanffyInterface::fish)
-    .field("predicted", &vonBertalanffyInterface::predicted);
+    .field("predicted", &vonBertalanffyInterface::predicted)
+    .field("linf", &vonBertalanffyInterface::linf)
+    .field("k", &vonBertalanffyInterface::k);
     Rcpp::function("get_parameter_vector", get_parameter_vector);
     Rcpp::function("clear", clear);
 };
@@ -301,9 +308,20 @@ Type objective_function<Type>::operator()(){
     for(int i =0; i < model->parameters.size(); i++){
         *model->parameters[i] = p[i];
     }
-    
     //evaluate the model objective function value
-    return model->evaluate();
+    Type nll = model->evaluate();
+    vector<Type> pred= model->predicted;
+    vector<Type> k=model->k;
+    vector<Type> linf=model->linf;
+    Type linf_mean=exp(model->log_l_inf_mean);
+    Type k_mean=exp(model->log_k_mean);
+    REPORT(pred);
+    REPORT(k);
+    REPORT(linf);
+    REPORT(linf_mean);
+    REPORT(k_mean);
+      
+    return nll;
 }
 
 
