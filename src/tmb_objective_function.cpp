@@ -59,10 +59,10 @@ public:
     Rcpp::IntegerVector fish;
     int nfish;
     Variable a_min;
-//    Variable log_l_inf;
+    //    Variable log_l_inf;
     Variable log_l_inf_sigma;
     Variable log_l_inf_mean;
-//    Variable log_k;
+    //    Variable log_k;
     Variable log_k_sigma;
     Variable log_k_mean;
 
@@ -197,6 +197,11 @@ public:
         this->log_l_inf_sigma.value = model->log_l_inf_sigma;
         this->a_min.value = model->a_min;
         this->predicted = Rcpp::NumericVector(model->predicted.size());
+        for (int i = 0; i < this->log_k.size(); i++) {
+            this->log_k[i] = model->log_k[i];
+            this->log_l_inf[i] = model->log_l_inf[i];
+        }
+
         for (int i = 0; i < model->predicted.size(); i++) {
             this->predicted[i] = model->predicted[i];
         }
@@ -218,6 +223,9 @@ public:
 
 
         Rcout << "vonBertalanffy:\n";
+
+
+
         Rcout << std::setw(15) << "observed  " << std::setw(15) << "predicted\n";
         for (int i = 0; i < this->predicted.size(); i++) {
             Rcout << std::setw(15) << this->obs[i] << std::setw(15) << this->predicted[i] << "\n";
@@ -225,6 +233,10 @@ public:
         Rcout << "k = " << exp(this->log_k_mean.value) << "\n";
         Rcout << "a_min = " << this->a_min.value << "\n";
         Rcout << "l_inf = " << exp(this->log_l_inf_mean.value) << "\n";
+        Rcout << std::setw(15) << "log_k  " << std::setw(15) << "log_l_inf\n";
+        for (int i = 0; i < this->log_k.size(); i++) {
+            Rcout << std::setw(15) << this->log_k[i] << std::setw(15) << this->log_l_inf[i] << "\n";
+        }
     }
 };
 vonBertalanffyInterface* vonBertalanffyInterface::instance = NULL;
@@ -310,8 +322,8 @@ RCPP_MODULE(growth) {
             .field("nfish", &vonBertalanffyInterface::nfish)
             .field("fish", &vonBertalanffyInterface::fish)
             .field("predicted", &vonBertalanffyInterface::predicted);
-//            .field("linf", &vonBertalanffyInterface::linf)
-//            .field("k", &vonBertalanffyInterface::k);
+    //            .field("linf", &vonBertalanffyInterface::linf)
+    //            .field("k", &vonBertalanffyInterface::k);
     Rcpp::function("get_parameter_vector", get_parameter_vector);
     Rcpp::function("get_random_effects_vector", get_random_effects_vector);
     Rcpp::function("clear", clear);
