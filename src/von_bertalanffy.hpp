@@ -56,12 +56,12 @@ public:
       this->k[i]=exp(this->log_k_mean + this->log_k[this->fish[i]]);
       Type temp = this->linf[i]*(1.0-exp(-this->k[i]*(ages[i]-this->a_min)));
       this->predicted[i] = temp;
-      norm2+=(temp-obs[i])*(temp-obs[i])/(2*.1*.1);
+      norm2 -= dnorm(temp, obs[i], Type(0.1), true);
     } 
     // probability of the random effects
     for(int i=0;i<nfish;i++){
-      norm2-= dnorm(log_l_inf[i],Type(0.0), exp(log_l_inf_sigma));
-      norm2-= dnorm(log_k[i],Type(0.0), exp(log_k_sigma));
+      norm2 -= dnorm(log_l_inf[i], Type(0.0), exp(log_l_inf_sigma), true);
+      norm2 -= dnorm(log_k[i], Type(0.0), exp(log_k_sigma), true);
     }
     return norm2;
   }
