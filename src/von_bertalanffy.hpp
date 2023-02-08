@@ -60,8 +60,8 @@ public:
     } 
     // probability of the random effects
     for(int i=0;i<nfish;i++){
-      norm2+= log_l_inf[i]/(2*pow(exp(log_l_inf_sigma),2));
-      norm2+= log_k[i]/(2*pow(exp(log_k_sigma),2));
+      norm2-= dnorm(log_l_inf[i],Type(0.0), exp(log_l_inf_sigma));
+      norm2-= dnorm(log_k[i],Type(0.0), exp(log_k_sigma));
     }
     return norm2;
   }

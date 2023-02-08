@@ -195,14 +195,13 @@ public:
         
         
         Rcout<<"vonBertalanffy:\n";
-        Rcout<<"k = "<< exp(this->log_k_mean.value)<<"\n";
-        Rcout<<"a_min = "<<this->a_min.value<<"\n";
-        Rcout<<"l_inf = "<<exp(this->log_l_inf_mean.value)<<"\n";
         Rcout<<std::setw(15)<<"observed  "<<std::setw(15)<<"predicted\n";
         for(int i =0; i < this->predicted.size(); i++){
             Rcout<<std::setw(15)<<this->obs[i]<<std::setw(15)<<this->predicted[i]<<"\n";
         }
-        
+        Rcout<<"k = "<< exp(this->log_k_mean.value)<<"\n";
+        Rcout<<"a_min = "<<this->a_min.value<<"\n";
+        Rcout<<"l_inf = "<<exp(this->log_l_inf_mean.value)<<"\n";
     }
 };
 vonBertalanffyInterface* vonBertalanffyInterface::instance = NULL;

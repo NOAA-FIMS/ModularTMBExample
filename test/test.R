@@ -1,7 +1,7 @@
 # A simple example showing how to use portable models
 # with Rcpp and TMB
 
-dyn.unload('ModularTMBExample')
+##if(is.loaded(dynlib('ModularTMBExample'))) dyn.unload(dynlib('ModularTMBExample'))
 devtools::install()
 
 library(TMB)
@@ -41,12 +41,12 @@ vonB<-new(gg$vonBertalanffy)
 #initialize k
 vonB$log_k_mean$value<-log(.5)
 vonB$log_k_mean$estimable<-TRUE
-vonB$log_k_sigma$value <- log(1.1)
+vonB$log_k_sigma$value <- log(.1)
 vonB$log_k_sigma$estimable <- FALSE
 for(i in 1:nfish) vonB$log_k$value[i] <- .0000123
 vonB$log_l_inf_mean$value <-log(10)
 vonB$log_l_inf_mean$estimable<- TRUE
-vonB$log_l_inf_sigma$value <- log(.99)
+vonB$log_l_inf_sigma$value <- log(.1)
 vonB$log_l_inf_sigma$estimable <- FALSE
 for(i in 1:nfish) vonB$log_l_inf$value[i] <- -0.00006
 vonB$log_k$estimable <- rep(FALSE, nfish)
@@ -59,39 +59,62 @@ vonB$nfish <- nfish
 vonB$fish <- data$fish-1
 vonB$ages<- data$age
 vonB$predicted <- rep(0,len=nrow(obs))
-## prepare for interfacing with TMB
-vonB$prepare()
-## create a parameter list
-parameters <- list(p = gg$get_parameter_vector())
 
-                                        #make the AD function in TMB
+### Have no random effects (turn off sigmas and RE vectors)
+vonB$prepare()
+parameters <- list(p = gg$get_parameter_vector())
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample")
-## Plot the initial values to the data
 obj$fn()
-obs$pred <- obj$report()$pred
+str(obj$report(obj$par))
+obs$pred0 <- obj$report(obj$par)$pred
+vonB$finalize(obj$par)
+vonB$show()
+## optimize
+opt <- with(obj, nlminb(par, fn, gr))
+vonB$finalize(opt$par)
+vonB$show()
+obs$pred <- obj$report(opt$par)$pred
 g <- ggplot(obs, aes(age, length)) + geom_line() +
   geom_point(mapping=aes(y=obs), col=2) +
-  geom_line(mapping=aes(y=pred), col=3) +
+  geom_line(mapping=aes(y=pred0), col=3) +
+  geom_line(mapping=aes(y=pred), col=4) +
   facet_wrap('fish')
 g
 
-vonB$finalize(obj$par)
-#show results
-vonB$show()
-
-
-## Have no random effects (turn off sigmas and RE vectors)
 
 ## Penalized ML: turn on RE vectors but leave sigmas off at the
 ## truth
+vonB$log_l_inf$estimable <- rep(TRUE, nfish)
+vonB$log_k$estimable <- rep(TRUE, nfish)
+vonB$prepare()
+parameters <- list(p = gg$get_parameter_vector())
+obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample")
+obj$fn()
+opt <- with(obj, nlminb(par, fn, gr))
+vonB$finalize(opt$par)
+vonB$show()
+obs$pred <- obj$report(opt$par)$pred
+g <- ggplot(obs, aes(age, length)) + geom_line() +
+  geom_point(mapping=aes(y=obs), col=2) +
+  geom_line(mapping=aes(y=pred0), col=3) +
+  geom_line(mapping=aes(y=pred), col=4) +
+  facet_wrap('fish')
+g
+
+
 
 ## Turn on marginal ML estimation of Linf vector (but not k)
+vonB$log_l_inf_sigma$estimable <- TRUE
 
 ## Full RE estimation of both vectors
+vonB$log_k_sigma$estimable <- TRUE
 
 ## Likelihood profiling (via TMB?)
 
 ## Full integration with NUTS via tmbstan
+library(tmbstan)
+fit <- tmbstan(obj)
+print(fit)
 
 ## Variational inference via tmbstan
 
