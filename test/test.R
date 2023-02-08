@@ -1,7 +1,7 @@
 # A simple example showing how to use portable models
 # with Rcpp and TMB
 
-##if(is.loaded(dynlib('ModularTMBExample'))) dyn.unload(dynlib('ModularTMBExample'))
+f(is.loaded(dynlib('ModularTMBExample'))) dyn.unload(dynlib('ModularTMBExample'))
 devtools::install()
 
 library(TMB)
@@ -17,6 +17,7 @@ set.seed(2342)
 nfish <- 10
 ages <- 1:15
 nreps <- length(ages)
+
 ## parameters per fish
 log_l_inf <- rnorm(nfish, log(10.0), sd=.1)
 log_k <- rnorm(nfish, log(.5), sd=.1)
@@ -38,19 +39,28 @@ data <- list(obs=obs$obs, fish=obs$fish, age=obs$age)
 gg$clear();
 #create a von Bertalanffy object
 vonB<-new(gg$vonBertalanffy)
+
 #initialize k
 vonB$log_k_mean$value<-log(.5)
 vonB$log_k_mean$estimable<-TRUE
 vonB$log_k_sigma$value <- log(.1)
 vonB$log_k_sigma$estimable <- FALSE
+
 for(i in 1:nfish) vonB$log_k$value[i] <- .0000123
+
 vonB$log_l_inf_mean$value <-log(10)
 vonB$log_l_inf_mean$estimable<- TRUE
+
 vonB$log_l_inf_sigma$value <- log(.1)
 vonB$log_l_inf_sigma$estimable <- FALSE
-for(i in 1:nfish) vonB$log_l_inf$value[i] <- -0.00006
-vonB$log_k$estimable <- rep(FALSE, nfish)
-vonB$log_l_inf$estimable <- rep(FALSE, nfish)
+
+for(i in 1:nfish) vonB$k[i] <- exp(-0.00006)
+vonB$log_k$log_k_is_estimated <- TRUE
+vonB$log_k$log_k_is_random_effect <- TRUE
+
+vonB$log_l_inf$log_l_inf_is_estimated <- TRUE
+vonB$log_l_inf$log_l_inf_is_random_effect<- TRUE
+
 vonB$a_min$value <- .001
 vonB$a_min$estimable <- FALSE
 #set data
@@ -62,8 +72,11 @@ vonB$predicted <- rep(0,len=nrow(obs))
 
 ### Have no random effects (turn off sigmas and RE vectors)
 vonB$prepare()
-parameters <- list(p = gg$get_parameter_vector())
-obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample")
+parameters <- list(p = gg$get_parameter_vector(), r = gg$get_random_effects_vector())
+
+obj <- MakeADFun(data=list(), parameters, random="r",  DLL="ModularTMBExample")
+
+
 obj$fn()
 str(obj$report(obj$par))
 obs$pred0 <- obj$report(obj$par)$pred
