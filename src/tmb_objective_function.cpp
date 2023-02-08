@@ -525,7 +525,15 @@ Rcpp::NumericVector get_random_effects_vector() {
  * Clears the vector of independent variables.
  */
 void clear() {
-    Variable::parameters.clear();
+    VonBertalanffyModel<TMB_FIMS_REAL_TYPE>::getInstance()->parameters.clear();
+    VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>::getInstance()->parameters.clear();
+    VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>::getInstance()->parameters.clear();
+    VonBertalanffyModel<TMB_FIMS_THIRD_ORDER>::getInstance()->parameters.clear();
+    
+    VonBertalanffyModel<TMB_FIMS_REAL_TYPE>::getInstance()->random_effects.clear();
+    VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>::getInstance()->random_effects.clear();
+    VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>::getInstance()->random_effects.clear();
+    VonBertalanffyModel<TMB_FIMS_THIRD_ORDER>::getInstance()->random_effects.clear();
 }
 
 /**

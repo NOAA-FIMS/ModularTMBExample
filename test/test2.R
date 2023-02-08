@@ -1,4 +1,4 @@
-adinr<-Rcpp::Module("growth", PACKAGE="ModularTMBExample")
+gg<-Rcpp::Module("growth", PACKAGE="ModularTMBExample")
 
 library(TMB)
 library(Rcpp)
@@ -79,6 +79,7 @@ obj$fn()
 
 ## optimize
 opt <- with(obj, nlminb(par, fn, gr))
-vonB$finalize(obj$par)
+
+vonB$finalize()
 vonB$show()
 
