@@ -12,6 +12,15 @@
 #define RCPP_NO_SUGAR
 #include <Rcpp.h>
 
+#define TMB_FIMS_REAL_TYPE double
+#define TMB_FIMS_FIRST_ORDER AD<TMB_FIMS_REAL_TYPE >
+#define TMB_FIMS_SECOND_ORDER AD<TMB_FIMS_FIRST_ORDER >
+#define TMB_FIMS_THIRD_ORDER AD<TMB_FIMS_SECOND_ORDER >
+
+
+Rcpp::NumericVector get_parameter_vector();
+Rcpp::NumericVector get_random_effects_vector();
+
 /**
  * Rcpp representation of a variable
  * interface between R and cpp.
@@ -30,24 +39,9 @@ public:
 
 };
 
-//class Variable2 {
-//public:
-//    static std::vector<Variable2*> parameters;
-//    static std::vector<Variable2*> estimated_parameters;
-//    std::vector<bool> estimable;
-//    std::vector<double> value;
-//    bool initialized = false;
-//
-//    Variable2() {
-//        Variable2::parameters.push_back(this);
-//    }
-//
-//};
 
 std::vector<Variable*> Variable::parameters;
 std::vector<Variable*> Variable::estimated_parameters;
-//std::vector<Variable2*> Variable2::parameters;
-//std::vector<Variable2*> Variable2::estimated_parameters;
 
 class vonBertalanffyInterface {
 public:
@@ -67,10 +61,10 @@ public:
     Variable log_k_mean;
 
 
-    bool log_l_inf_is_estimated = false;
-    bool log_l_inf_is_random_effect = false;
-    bool log_k_is_estimated = false;
-    bool log_k_is_random_effect = false;
+    bool log_l_inf_is_estimated = true;
+    bool log_l_inf_is_random_effect = true;
+    bool log_k_is_estimated = true;
+    bool log_k_is_random_effect = true;
 
     static vonBertalanffyInterface* instance;
 
@@ -78,14 +72,9 @@ public:
         instance = this;
     }
 
-    /**
-     * Prepares the model to work with TMB.
-     */
-    void prepare() {
-        prepare_template<double>();
-    }
+    //  
+    //    template<class Type>
 
-    template<class Type>
     void prepare_template() {
 
         // if(this->obs.size() != this->ages.size()){
@@ -97,8 +86,8 @@ public:
             Rcpp::stop("ages vector length not equal to obs vector length");
         }
 
-        VonBertalanffyModel<Type>* model =
-                VonBertalanffyModel<Type>::getInstance();
+        VonBertalanffyModel<TMB_FIMS_REAL_TYPE>* model =
+                VonBertalanffyModel<TMB_FIMS_REAL_TYPE>::getInstance();
 
         // model->clear();
 
@@ -171,21 +160,272 @@ public:
         if (this->a_min.estimable) {
             model->parameters.push_back(&model->a_min);
         }
+
+
+        VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>* model2 =
+                VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>::getInstance();
+
+        // model2->clear();
+
+        model2->predicted.resize(this->obs.size());
+        model2->log_l_inf.resize(this->obs.size());
+        model2->log_k.resize(this->obs.size());
+        model2->ages.resize(this->ages.size());
+        model2->obs.resize(this->obs.size());
+        model2->fish.resize(this->fish.size());
+        for (int i = 0; i < this->obs.size(); i++) {
+            model2->ages[i] = this->ages[i];
+            model2->obs[i] = this->obs[i];
+        }
+        model2->nfish = this->nfish;
+
+        //initialize a_min
+        model2->a_min = this->a_min.value;
+        //initialize k
+        model2->log_k_mean = this->log_k_mean.value;
+        model2->log_k_sigma = this->log_k_sigma.value;
+        //initialize l_inf
+        model2->log_l_inf_mean = this->log_l_inf_mean.value;
+        model2->log_l_inf_sigma = this->log_l_inf_sigma.value;
+        model2->log_k.resize(this->obs.size());
+        model2->log_l_inf.resize(this->obs.size());
+        // model2->log_l_inf = this->log_l_inf;
+        // model2->log_k = this->log_k;
+
+        for (int i = 0; i < nfish; i++) {
+            model2->log_l_inf[i] = (this->log_l_inf[i]);
+            if (this->log_l_inf_is_estimated) {
+                if (this->log_l_inf_is_random_effect) {
+                    model2->random_effects.push_back(&model2->log_l_inf[i]);
+                } else {
+                    model2->parameters.push_back(&model2->log_l_inf[i]);
+                }
+            }
+
+            model2->log_k[i] = (this->log_k[i]);
+            if (this->log_k_is_estimated) {
+                if (this->log_k_is_random_effect) {
+                    model2->random_effects.push_back(&model2->log_k[i]);
+                } else {
+                    model2->parameters.push_back(&model2->log_k[i]);
+                }
+            }
+        }
+
+
+        if (this->log_k_mean.estimable) {
+            model2->parameters.push_back(&model2->log_k_mean);
+        }
+        if (this->log_k_sigma.estimable) {
+            model2->parameters.push_back(&model2->log_k_sigma);
+        }
+        if (this->log_l_inf_mean.estimable) {
+            model2->parameters.push_back(&model2->log_l_inf_mean);
+        }
+        if (this->log_l_inf_sigma.estimable) {
+            model2->parameters.push_back(&model2->log_l_inf_sigma);
+        }
+        //        for (int i = 0; i<this->nfish; i++) {
+        //            if (this->log_k.estimable[i]) {
+        //                model2->parameters.push_back(&model2->log_k[i]);
+        //            }
+        //            if (this->log_l_inf.estimable[i]) {
+        //                model2->parameters.push_back(&model2->log_l_inf[i]);
+        //            }
+        //        }
+        if (this->a_min.estimable) {
+            model2->parameters.push_back(&model2->a_min);
+        }
+
+
+
+
+        VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>* model3 =
+                VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>::getInstance();
+
+        // model3->clear();
+
+        model3->predicted.resize(this->obs.size());
+        model3->log_l_inf.resize(this->obs.size());
+        model3->log_k.resize(this->obs.size());
+        model3->ages.resize(this->ages.size());
+        model3->obs.resize(this->obs.size());
+        model3->fish.resize(this->fish.size());
+        for (int i = 0; i < this->obs.size(); i++) {
+            model3->ages[i] = this->ages[i];
+            model3->obs[i] = this->obs[i];
+        }
+        model3->nfish = this->nfish;
+
+        //initialize a_min
+        model3->a_min = this->a_min.value;
+        //initialize k
+        model3->log_k_mean = this->log_k_mean.value;
+        model3->log_k_sigma = this->log_k_sigma.value;
+        //initialize l_inf
+        model3->log_l_inf_mean = this->log_l_inf_mean.value;
+        model3->log_l_inf_sigma = this->log_l_inf_sigma.value;
+        model3->log_k.resize(this->obs.size());
+        model3->log_l_inf.resize(this->obs.size());
+        // model3->log_l_inf = this->log_l_inf;
+        // model3->log_k = this->log_k;
+
+        for (int i = 0; i < nfish; i++) {
+            model3->log_l_inf[i] = (this->log_l_inf[i]);
+            if (this->log_l_inf_is_estimated) {
+                if (this->log_l_inf_is_random_effect) {
+                    model3->random_effects.push_back(&model3->log_l_inf[i]);
+                } else {
+                    model3->parameters.push_back(&model3->log_l_inf[i]);
+                }
+            }
+
+            model3->log_k[i] = (this->log_k[i]);
+            if (this->log_k_is_estimated) {
+                if (this->log_k_is_random_effect) {
+                    model3->random_effects.push_back(&model3->log_k[i]);
+                } else {
+                    model3->parameters.push_back(&model3->log_k[i]);
+                }
+            }
+        }
+
+
+        if (this->log_k_mean.estimable) {
+            model3->parameters.push_back(&model3->log_k_mean);
+        }
+        if (this->log_k_sigma.estimable) {
+            model3->parameters.push_back(&model3->log_k_sigma);
+        }
+        if (this->log_l_inf_mean.estimable) {
+            model3->parameters.push_back(&model3->log_l_inf_mean);
+        }
+        if (this->log_l_inf_sigma.estimable) {
+            model3->parameters.push_back(&model3->log_l_inf_sigma);
+        }
+        //        for (int i = 0; i<this->nfish; i++) {
+        //            if (this->log_k.estimable[i]) {
+        //                model3->parameters.push_back(&model3->log_k[i]);
+        //            }
+        //            if (this->log_l_inf.estimable[i]) {
+        //                model3->parameters.push_back(&model3->log_l_inf[i]);
+        //            }
+        //        }
+        if (this->a_min.estimable) {
+            model3->parameters.push_back(&model3->a_min);
+        }
+
+
+        VonBertalanffyModel<TMB_FIMS_THIRD_ORDER>* model4 =
+                VonBertalanffyModel<TMB_FIMS_THIRD_ORDER>::getInstance();
+
+        // model4->clear();
+
+        model4->predicted.resize(this->obs.size());
+        model4->log_l_inf.resize(this->obs.size());
+        model4->log_k.resize(this->obs.size());
+        model4->ages.resize(this->ages.size());
+        model4->obs.resize(this->obs.size());
+        model4->fish.resize(this->fish.size());
+        for (int i = 0; i < this->obs.size(); i++) {
+            model4->ages[i] = this->ages[i];
+            model4->obs[i] = this->obs[i];
+        }
+        model4->nfish = this->nfish;
+
+        //initialize a_min
+        model4->a_min = this->a_min.value;
+        //initialize k
+        model4->log_k_mean = this->log_k_mean.value;
+        model4->log_k_sigma = this->log_k_sigma.value;
+        //initialize l_inf
+        model4->log_l_inf_mean = this->log_l_inf_mean.value;
+        model4->log_l_inf_sigma = this->log_l_inf_sigma.value;
+        model4->log_k.resize(this->obs.size());
+        model4->log_l_inf.resize(this->obs.size());
+        // model4->log_l_inf = this->log_l_inf;
+        // model4->log_k = this->log_k;
+
+        for (int i = 0; i < nfish; i++) {
+            model4->log_l_inf[i] = (this->log_l_inf[i]);
+            if (this->log_l_inf_is_estimated) {
+                if (this->log_l_inf_is_random_effect) {
+                    model4->random_effects.push_back(&model4->log_l_inf[i]);
+                } else {
+                    model4->parameters.push_back(&model4->log_l_inf[i]);
+                }
+            }
+
+            model4->log_k[i] = (this->log_k[i]);
+            if (this->log_k_is_estimated) {
+                if (this->log_k_is_random_effect) {
+                    model4->random_effects.push_back(&model4->log_k[i]);
+                } else {
+                    model4->parameters.push_back(&model4->log_k[i]);
+                }
+            }
+        }
+
+
+        if (this->log_k_mean.estimable) {
+            model4->parameters.push_back(&model4->log_k_mean);
+        }
+        if (this->log_k_sigma.estimable) {
+            model4->parameters.push_back(&model4->log_k_sigma);
+        }
+        if (this->log_l_inf_mean.estimable) {
+            model4->parameters.push_back(&model4->log_l_inf_mean);
+        }
+        if (this->log_l_inf_sigma.estimable) {
+            model4->parameters.push_back(&model4->log_l_inf_sigma);
+        }
+        //        for (int i = 0; i<this->nfish; i++) {
+        //            if (this->log_k.estimable[i]) {
+        //                model4->parameters.push_back(&model4->log_k[i]);
+        //            }
+        //            if (this->log_l_inf.estimable[i]) {
+        //                model4->parameters.push_back(&model4->log_l_inf[i]);
+        //            }
+        //        }
+        if (this->a_min.estimable) {
+            model4->parameters.push_back(&model4->a_min);
+        }
+
+    }
+
+    /**
+     * Prepares the model to work with TMB.
+     */
+    void prepare() {
+        prepare_template();
+        //        prepare_template<TMB_FIMS_FIRST_ORDER>();
+        //        prepare_template<TMB_FIMS_SECOND_ORDER>();
+        //        prepare_template<TMB_FIMS_THIRD_ORDER>();
     }
 
     /**
      * Update the model parameter values and finalize. Sets the parameter values and evaluates the
      * portable model once and transfers values back to the Rcpp interface.
      */
-    void finalize(Rcpp::NumericVector v) {
+    void finalize() {
+
+        Rcpp::NumericVector v = get_parameter_vector();
+        Rcpp::NumericVector r = get_random_effects_vector();
+        std::cout << "finalizing....\n";
         VonBertalanffyModel<double>* model =
                 VonBertalanffyModel<double>::getInstance();
 
         for (int i = 0; i < v.size(); i++) {
             (*model->parameters[i]) = v[i];
         }
+        for (int i = 0; i < v.size(); i++) {
+            (*model->random_effects[i]) = r[i];
+        }
 
         double f = model->evaluate();
+
+        std::cout << model->log_k_mean << "\n";
+        std::cout << model->log_l_inf_mean << "\ndone\n";
 
         this->log_k_mean.value = model->log_k_mean;
         this->log_k_sigma.value = model->log_k_sigma;
@@ -296,11 +536,6 @@ RCPP_MODULE(growth) {
             .constructor()
             .field("value", &Variable::value)
             .field("estimable", &Variable::estimable);
-//    Rcpp::class_<Variable2>("Variable2")
-//            .constructor()
-//            .field("value", &Variable2::value)
-//            .field("estimable", &Variable2::estimable)
-//            .field("initialized", &Variable2::initialized);
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
             .constructor()
             .method("prepare", &vonBertalanffyInterface::prepare)
@@ -342,7 +577,7 @@ template<typename Type>
 Type objective_function<Type>::operator()() {
 
     //get the singleton instance for type Type
-    vonBertalanffyInterface::instance->prepare_template<Type>();
+    //    vonBertalanffyInterface::instance->prepare_template<Type>();
     VonBertalanffyModel<Type>* model =
             VonBertalanffyModel<Type>::getInstance();
 
