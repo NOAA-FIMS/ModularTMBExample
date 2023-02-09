@@ -18,6 +18,7 @@ log_l_inf <- rnorm(nfish, log(10.0), sd=.1)
 log_k <- rnorm(nfish, log(.5), sd=.1)
 a_min <- 0.1
 fish <- rep(1:nfish, each=nreps)
+
 ## simulate
 obs <- lapply(1:nfish, function(i)
   data.frame(fish=i, age=ages,
@@ -29,6 +30,7 @@ obs <- lapply(1:nfish, function(i)
 
 #get the Rcpp module
 gg <- Rcpp::Module(module = "growth",PACKAGE = "ModularTMBExample")
+
 data <- list(obs=obs$obs, fish=obs$fish, age=obs$age)
 
 #clear the parameter list, if there already is one
@@ -60,6 +62,7 @@ vonB$log_l_inf_is_random_effect<- TRUE
 
 vonB$a_min$value <- .001
 vonB$a_min$estimable <- FALSE
+
 #set data
 vonB$obs <-data$obs
 vonB$nfish <- nfish
@@ -67,13 +70,12 @@ vonB$fish <- data$fish-1
 vonB$ages<- data$age
 vonB$predicted <- rep(0,len=nrow(obs))
 
-### Have random effects
+### With random effects
 vonB$prepare()
 
 parameters <- list(p = gg$get_parameter_vector(), r = gg$get_random_effects_vector())
 
 obj <- MakeADFun(data=list(), parameters, random="r",  DLL="ModularTMBExample")
-
 
 obj$fn()
 
