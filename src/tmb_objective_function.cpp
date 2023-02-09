@@ -375,11 +375,13 @@ Type objective_function<Type>::operator()() {
 
     //evaluate the model objective function value
     Type nll = model->evaluate();
+    
     vector<Type> pred = model->predicted;
     vector<Type> k = model->k;
     vector<Type> linf = model->linf;
     Type linf_mean = exp(model->log_l_inf_mean);
     Type k_mean = exp(model->log_k_mean);
+    
     REPORT(pred);
     REPORT(k);
     REPORT(linf);
