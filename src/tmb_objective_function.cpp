@@ -196,7 +196,7 @@ public:
 
         double f = model->evaluate();
 
-       
+
 
         this->log_k_mean.value = model->log_k_mean;
         this->log_k_sigma.value = model->log_k_sigma;
@@ -356,30 +356,34 @@ template<typename Type>
 Type objective_function<Type>::operator()() {
 
     //get the singleton instance for type Type
-    //    vonBertalanffyInterface::instance->prepare_template<Type>();
     VonBertalanffyModel<Type>* model =
             VonBertalanffyModel<Type>::getInstance();
 
     //get the parameter values
     PARAMETER_VECTOR(p)
+            
+    //get the random effects values        
     PARAMETER_VECTOR(r)
 
-            //update the parameter values for type Type
+    //update the parameter values for type Type
     for (int i = 0; i < model->parameters.size(); i++) {
         *model->parameters[i] = p[i];
     }
 
+    //update random effects
     for (int i = 0; i < model->random_effects.size(); i++) {
         *model->random_effects[i] = r[i];
     }
 
     //evaluate the model objective function value
     Type nll = model->evaluate();
+
     vector<Type> pred = model->predicted;
     vector<Type> k = model->k;
     vector<Type> linf = model->linf;
     Type linf_mean = exp(model->log_l_inf_mean);
     Type k_mean = exp(model->log_k_mean);
+
     REPORT(pred);
     REPORT(k);
     REPORT(linf);
