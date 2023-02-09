@@ -31,6 +31,7 @@ obs <- lapply(1:nfish, function(i)
 #get the Rcpp module
 gg <- Rcpp::Module(module = "growth",PACKAGE = "ModularTMBExample")
 
+#create data list
 data <- list(obs=obs$obs, fish=obs$fish, age=obs$age)
 
 #clear the parameter list, if there already is one
