@@ -1,7 +1,6 @@
 # A simple example showing how to use portable models
 # with Rcpp and TMB
 
-if(is.loaded(dynlib('ModularTMBExample'))) dyn.unload(dynlib('ModularTMBExample'))
 devtools::install()
 
 library(TMB)
@@ -41,7 +40,7 @@ data <- list(obs=obs$obs, fish=obs$fish, age=obs$age)
 #clear the parameter list, if there already is one
 model$clear();
 #create a von Bertalanffy object
-vonB<-new(gg$vonBertalanffy)
+vonB<-new(model$vonBertalanffy)
 
 #initialize k
 vonB$log_k_mean$value<-log(.5)
