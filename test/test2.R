@@ -1,4 +1,3 @@
-gg<-Rcpp::Module("growth", PACKAGE="ModularTMBExample")
 
 library(TMB)
 library(Rcpp)
@@ -31,8 +30,10 @@ obs <- lapply(1:nfish, function(i)
 #get the Rcpp module
 gg <- Rcpp::Module(module = "growth",PACKAGE = "ModularTMBExample")
 data <- list(obs=obs$obs, fish=obs$fish, age=obs$age)
+
 #clear the parameter list, if there already is one
 gg$clear();
+
 #create a von Bertalanffy object
 vonB<-new(gg$vonBertalanffy)
 
@@ -66,20 +67,20 @@ vonB$fish <- data$fish-1
 vonB$ages<- data$age
 vonB$predicted <- rep(0,len=nrow(obs))
 
-### Have no random effects (turn off sigmas and RE vectors)
+### Have random effects
 vonB$prepare()
+
 parameters <- list(p = gg$get_parameter_vector(), r = gg$get_random_effects_vector())
 
 obj <- MakeADFun(data=list(), parameters, random="r",  DLL="ModularTMBExample")
 
 
 obj$fn()
-#str(obj$report(obj$par))
-#obs$pred0 <- obj$report(obj$par)$pred
 
 ## optimize
 opt <- with(obj, nlminb(par, fn, gr))
 
 vonB$finalize()
+
 vonB$show()
 
