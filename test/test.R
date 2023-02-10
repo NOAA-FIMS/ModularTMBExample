@@ -1,13 +1,14 @@
 # A simple example showing how to use portable models
 # with Rcpp and TMB
 
-devtools::install()
-
+## devtools::install()
 library(TMB)
 library(Rcpp)
 library(ModularTMBExample)
 library(dplyr)
 library(ggplot2)
+library(tmbstan)
+library(shinystan)
 theme_set(theme_bw())
 
 ## simulate data, repeated measures for each fish so can use
@@ -16,7 +17,6 @@ set.seed(2342)
 nfish <- 10
 ages <- 1:15
 nreps <- length(ages)
-
 ## parameters per fish
 log_l_inf <- rnorm(nfish, log(10.0), sd=.1)
 log_k <- rnorm(nfish, log(.5), sd=.1)
@@ -31,38 +31,27 @@ obs <- lapply(1:nfish, function(i)
 g <- ggplot(obs, aes(age, length)) + geom_line() +
   geom_point(mapping=aes(y=obs), col=2) +
   facet_wrap('fish')
-g
+
 
 
 #get the Rcpp module
-model <- Rcpp::Module(module = "growth",PACKAGE = "ModularTMBExample")
+m <- Rcpp::Module(module = "growth",PACKAGE = "ModularTMBExample")
 data <- list(obs=obs$obs, fish=obs$fish, age=obs$age)
 #clear the parameter list, if there already is one
-model$clear();
+m$clear();
 #create a von Bertalanffy object
-vonB<-new(model$vonBertalanffy)
-
+vonB <- new(m$vonBertalanffy)
+## Global settings for all cases below
 #initialize k
-vonB$log_k_mean$value<-log(.5)
-vonB$log_k_mean$estimable<-TRUE
+vonB$log_k_mean$value <- log(.5)
+vonB$log_k_mean$estimable <- TRUE
 vonB$log_k_sigma$value <- log(.1)
-vonB$log_k_sigma$estimable <- FALSE
-
-for(i in 1:nfish) vonB$log_k$value[i] <- .0000123
-
+for(i in 1:nfish) vonB$log_k[i] <- log_k[i]-log(.5)
+## initialize linf
 vonB$log_l_inf_mean$value <-log(10)
 vonB$log_l_inf_mean$estimable<- TRUE
-
 vonB$log_l_inf_sigma$value <- log(.1)
-vonB$log_l_inf_sigma$estimable <- FALSE
-
-for(i in 1:nfish) vonB$k[i] <- exp(-0.00006)
-vonB$log_k$log_k_is_estimated <- TRUE
-vonB$log_k$log_k_is_random_effect <- TRUE
-
-vonB$log_l_inf$log_l_inf_is_estimated <- TRUE
-vonB$log_l_inf$log_l_inf_is_random_effect<- TRUE
-
+for(i in 1:nfish) vonB$log_l_inf[i] <- log_l_inf[i]-log(10)
 vonB$a_min$value <- .001
 vonB$a_min$estimable <- FALSE
 #set data
@@ -71,54 +60,71 @@ vonB$nfish <- nfish
 vonB$fish <- data$fish-1
 vonB$ages<- data$age
 vonB$predicted <- rep(0,len=nrow(obs))
+## ones we change below, start w/ just two fixed effects (means)
+vonB$log_k_sigma$estimable <- FALSE
+vonB$log_k_is_estimated <- FALSE
+vonB$log_k_is_random_effect <- FALSE
+vonB$log_l_inf_sigma$estimable <- FALSE
+vonB$log_l_inf_is_estimated <- FALSE
+vonB$log_l_inf_is_random_effect<- FALSE
+str(vonB)
 
 ### Have no random effects (turn off sigmas and RE vectors)
 vonB$prepare()
-
-parameters <- list(p = gg$get_parameter_vector(), r = gg$get_random_effects_vector())
-
-obj <- MakeADFun(data=list(), parameters, random="r",  DLL="ModularTMBExample")
-
-
+(parameters <- list(p = m$get_parameter_vector(), r = m$get_random_effects_vector()))
+obj <- MakeADFun(data=list(), parameters,
+                 DLL="ModularTMBExample", silent=TRUE)
 obj$fn()
-str(obj$report(obj$par))
-obs$pred0 <- obj$report(obj$par)$pred
-vonB$finalize(obj$par)
-vonB$show()
+str(obj$report())
+obs$pred0 <- obj$report()$pred
+#vonB$finalize()
+## vonB$show()
 ## optimize
 opt <- with(obj, nlminb(par, fn, gr))
-obs$pred <- obj$report(opt$par)$pred
-sdreport(obj)
-g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
-
+obs$pred <- obj$report()$pred
+## sdreport(obj)
+g+ geom_line(data=obs, mapping=aes(y=pred), col=4) +
+  geom_line(data=obs, mapping=aes(y=pred0), col=5)
+## fit <- tmbstan(obj, init='last.par.best', chains=1)
+## launch_shinystan(fit)
 
 ## Penalized ML: turn on RE vectors but leave sigmas off at the
-## truth
-vonB$log_l_inf$estimable <- rep(TRUE, nfish)
-vonB$log_k$estimable <- rep(TRUE, nfish)
+## truth and treat the RE as FE
+vonB$log_l_inf_is_estimated <- TRUE
+vonB$log_k_is_estimated <- TRUE
 vonB$prepare()
-parameters <- list(p = model$get_parameter_vector())
-obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample")
+(parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
+map <- list(p=factor(c(rep(NA,2), 1:22)))
+map <- list()
+obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE, map=map)
+
+obj$fn()
+obj$gr()
+obj$par
+htsummary(obj$report()$k)
+obs$pred0 <- obj$report()$pred
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report(opt$par)$pred
-sdreport(obj)
-g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
-
+g+ geom_line(data=obs, mapping=aes(y=pred), col=4) +
+  geom_line(data=obs, mapping=aes(y=pred0), col=5)
+obj$report()
+fit <- tmbstan(obj, init='last.par.best', chains=1)
+launch_shinystan(fit)
 
 
 ## Turn on marginal ML estimation of Linf vector (but not k)
 vonB$log_l_inf_sigma$estimable <- TRUE
-parameters <- list(p = model$get_parameter_vector())
+parameters <- list(p = m$get_parameter_vector())
 
 ## Full RE estimation of both vectors
 vonB$log_k_sigma$estimable <- TRUE
-parameters <- list(p = model$get_parameter_vector())
+parameters <- list(p = m$get_parameter_vector())
 
 ## Estimate blocks. Collapse vectors into sets of fixed effects
 vonB$log_k_sigma$estimable <- FALSE
 vonB$log_l_inf_sigma$estimable <- FALSE
 
-parameters <- list(p = model$get_parameter_vector())
+parameters <- list(p = m$get_parameter_vector())
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample")
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report(opt$par)$pred
