@@ -100,6 +100,7 @@ public:
         for (int i = 0; i < this->obs.size(); i++) {
             model->ages[i] = this->ages[i];
             model->obs[i] = this->obs[i];
+	    model->fish[i] = this->fish[i];
         }
         model->nfish = this->nfish;
 
@@ -362,7 +363,7 @@ Type objective_function<Type>::operator()() {
     //get the parameter values
     PARAMETER_VECTOR(p)
             
-      //PARAMETER_VECTOR(r)
+     PARAMETER_VECTOR(r)
 
     //update the parameter values for type Type
     for (int i = 0; i < model->parameters.size(); i++) {
@@ -370,9 +371,9 @@ Type objective_function<Type>::operator()() {
     }
 
     //update random effects
-    // for (int i = 0; i < model->random_effects.size(); i++) {
-    //     *model->random_effects[i] = r[i];
-    // }
+    for (int i = 0; i < model->random_effects.size(); i++) {
+        *model->random_effects[i] = r[i];
+    }
 
     //evaluate the model objective function value
     Type nll = model->evaluate();

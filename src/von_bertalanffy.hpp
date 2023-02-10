@@ -53,6 +53,7 @@ public:
       
       this->linf.resize(ages.size());
       this->k.resize(ages.size());
+      this->fish.resize(ages.size());
       Type norm2 = 0.0;
       for(int i =0; i< obs.size(); i++){
 	this->linf[i]=exp(this->log_l_inf_mean + this->log_l_inf[this->fish[i]]);
