@@ -69,15 +69,21 @@ vonB$log_k_is_random_effect <- FALSE
 vonB$log_l_inf_sigma$estimable <- FALSE
 vonB$log_l_inf_is_estimated <- FALSE
 vonB$log_l_inf_is_random_effect<- FALSE
-str(vonB)
+
 
 
 ### Fit a series of models to it to prove that we can
 
 ### Have no random effects (turn off sigmas and RE vectors)
 vonB$prepare()
+
 (parameters <- list(p = m$get_parameter_vector(), r = m$get_random_effects_vector()))
+m$get_parameter_vector()
+m$get_random_effects_vector()
 obj <- MakeADFun(data=list(), parameters,
-                 DLL="ModularTMBExample", silent=TRUE)
+                 DLL="ModularTMBExample", silent=FALSE)
 obj$fn()
-str(obj$report())
+
+
+system.time(opt <- nlminb(obj$par, obj$fn, obj$gr))
+obs$pred <- obj$report()$pred
