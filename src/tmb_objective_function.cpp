@@ -32,6 +32,8 @@ public:
     bool estimable = false;
     bool is_random_effect = false;
     double value = 0;
+    size_t parameter_index;
+    size_t random_parameter_index;
 
     Variable() {
         Variable::parameters.push_back(this);
@@ -43,13 +45,59 @@ public:
 std::vector<Variable*> Variable::parameters;
 std::vector<Variable*> Variable::estimated_parameters;
 
+class VariableVector {
+    std::vector<Variable> x;
+public:
+
+    VariableVector() {
+    }
+
+    VariableVector(size_t size) {
+        x.resize(size);
+    }
+
+    void resize(size_t size) {
+        std::cout<<"resizing to "<<size<<std::endl;
+        x.resize(size);
+        std::cout<<x.size()<<std::endl;
+    }
+
+    Variable at(size_t index) {
+        return x[index];
+    }
+
+    Variable& operator[](size_t index) {
+        return x[index];
+    }
+
+    void set(size_t index, double v) {
+        if (index >= x.size()) {
+            Rcout << "index out of bounds: "<<index<<" < "<<x.size()-1<<"\n";
+            return;
+        }
+        x[index].value = v;
+    }
+
+    size_t size() {
+        return x.size();
+    }
+
+    size_t get_parameter_index(size_t index) {
+        return x[index].parameter_index;
+    }
+
+    size_t get_random_parameter_index(size_t index) {
+        return x[index].random_parameter_index;
+    }
+};
+
 class vonBertalanffyInterface {
 public:
     Rcpp::NumericVector obs;
     Rcpp::NumericVector ages;
     Rcpp::NumericVector predicted;
-    Rcpp::NumericVector log_l_inf;
-    Rcpp::NumericVector log_k;
+    VariableVector log_l_inf;
+    VariableVector log_k;
     Rcpp::IntegerVector fish;
     int nfish;
     Variable a_min;
@@ -100,7 +148,7 @@ public:
         for (int i = 0; i < this->obs.size(); i++) {
             model->ages[i] = this->ages[i];
             model->obs[i] = this->obs[i];
-	    model->fish[i] = this->fish[i];
+            model->fish[i] = this->fish[i];
         }
         model->nfish = this->nfish;
 
@@ -117,23 +165,27 @@ public:
         model->log_l_inf.resize(this->obs.size());
         // model->log_l_inf = this->log_l_inf;
         // model->log_k = this->log_k;
-
+        //
         for (int i = 0; i < nfish; i++) {
-            model->log_l_inf[i] = (this->log_l_inf[i]);
+            model->log_l_inf[i] = (this->log_l_inf[i].value);
             if (this->log_l_inf_is_estimated) {
                 if (this->log_l_inf_is_random_effect) {
                     model->random_effects.push_back(&model->log_l_inf[i]);
+                    this->log_l_inf[i].random_parameter_index = model->random_effects.size() - 1;
                 } else {
                     model->parameters.push_back(&model->log_l_inf[i]);
+                    this->log_l_inf[i].parameter_index = model->parameters.size() - 1;
                 }
             }
 
-            model->log_k[i] = (this->log_k[i]);
+            model->log_k[i] = (this->log_k[i].value);
             if (this->log_k_is_estimated) {
                 if (this->log_k_is_random_effect) {
                     model->random_effects.push_back(&model->log_k[i]);
+                    this->log_k[i].random_parameter_index = model->random_effects.size() - 1;
                 } else {
                     model->parameters.push_back(&model->log_k[i]);
+                    this->log_k[i].parameter_index = model->parameters.size() - 1;
                 }
             }
         }
@@ -141,15 +193,19 @@ public:
 
         if (this->log_k_mean.estimable) {
             model->parameters.push_back(&model->log_k_mean);
+            this->log_k_mean.parameter_index = model->parameters.size() - 1;
         }
         if (this->log_k_sigma.estimable) {
             model->parameters.push_back(&model->log_k_sigma);
+            this->log_k_sigma.parameter_index = model->parameters.size() - 1;
         }
         if (this->log_l_inf_mean.estimable) {
             model->parameters.push_back(&model->log_l_inf_mean);
+            this->log_l_inf_mean.parameter_index = model->parameters.size() - 1;
         }
         if (this->log_l_inf_sigma.estimable) {
             model->parameters.push_back(&model->log_l_inf_sigma);
+            this->log_l_inf_sigma.parameter_index = model->parameters.size() - 1;
         }
         //        for (int i = 0; i<this->nfish; i++) {
         //            if (this->log_k.estimable[i]) {
@@ -161,6 +217,7 @@ public:
         //        }
         if (this->a_min.estimable) {
             model->parameters.push_back(&model->a_min);
+            this->a_min.parameter_index = model->parameters.size() - 1;
         }
 
 
@@ -181,42 +238,42 @@ public:
      * portable model once and transfers values back to the Rcpp interface.
      */
     void finalize() {
-
-        Rcpp::NumericVector v = get_parameter_vector();
-        Rcpp::NumericVector r = get_random_effects_vector();
-        std::cout << "finalizing....\n";
-        VonBertalanffyModel<double>* model =
-                VonBertalanffyModel<double>::getInstance();
-
-        for (int i = 0; i < v.size(); i++) {
-            (*model->parameters[i]) = v[i];
-        }
-        for (int i = 0; i < v.size(); i++) {
-            (*model->random_effects[i]) = r[i];
-        }
-
-        double f = model->evaluate();
-
-
-
-        this->log_k_mean.value = model->log_k_mean;
-        this->log_k_sigma.value = model->log_k_sigma;
-        // for(int i=0; i<nfish;i++){
-        //   this->log_k[i] = model->log_k[i];
-        //   this->log_l_inf[i] = model->log_l_inf[i];
-        // }
-        this->log_l_inf_mean.value = model->log_l_inf_mean;
-        this->log_l_inf_sigma.value = model->log_l_inf_sigma;
-        this->a_min.value = model->a_min;
-        this->predicted = Rcpp::NumericVector(model->predicted.size());
-        for (int i = 0; i < this->log_k.size(); i++) {
-            this->log_k[i] = model->log_k[i];
-            this->log_l_inf[i] = model->log_l_inf[i];
-        }
-
-        for (int i = 0; i < model->predicted.size(); i++) {
-            this->predicted[i] = model->predicted[i];
-        }
+        //
+        //        Rcpp::NumericVector v = get_parameter_vector();
+        //        Rcpp::NumericVector r = get_random_effects_vector();
+        //        std::cout << "finalizing....\n";
+        //        VonBertalanffyModel<double>* model =
+        //                VonBertalanffyModel<double>::getInstance();
+        //
+        //        for (int i = 0; i < v.size(); i++) {
+        //            (*model->parameters[i]) = v[i];
+        //        }
+        //        for (int i = 0; i < v.size(); i++) {
+        //            (*model->random_effects[i]) = r[i];
+        //        }
+        //
+        //        double f = model->evaluate();
+        //
+        //
+        //
+        //        this->log_k_mean.value = model->log_k_mean;
+        //        this->log_k_sigma.value = model->log_k_sigma;
+        //        // for(int i=0; i<nfish;i++){
+        //        //   this->log_k[i] = model->log_k[i];
+        //        //   this->log_l_inf[i] = model->log_l_inf[i];
+        //        // }
+        //        this->log_l_inf_mean.value = model->log_l_inf_mean;
+        //        this->log_l_inf_sigma.value = model->log_l_inf_sigma;
+        //        this->a_min.value = model->a_min;
+        //        this->predicted = Rcpp::NumericVector(model->predicted.size());
+        //        for (int i = 0; i < this->log_k.size(); i++) {
+        //            this->log_k[i].value = model->log_k[i];
+        //            this->log_l_inf[i].value = model->log_l_inf[i];
+        //        }
+        //
+        //        for (int i = 0; i < model->predicted.size(); i++) {
+        //            this->predicted[i] = model->predicted[i];
+        //        }
 
     }
 
@@ -247,7 +304,7 @@ public:
         Rcout << "l_inf = " << exp(this->log_l_inf_mean.value) << "\n";
         Rcout << std::setw(15) << "log_k  " << std::setw(15) << "log_l_inf\n";
         for (int i = 0; i < this->log_k.size(); i++) {
-            Rcout << std::setw(15) << this->log_k[i] << std::setw(15) << this->log_l_inf[i] << "\n";
+            Rcout << std::setw(15) << this->log_k[i].value << std::setw(15) << this->log_l_inf[i].value << "\n";
         }
     }
 };
@@ -257,7 +314,7 @@ vonBertalanffyInterface* vonBertalanffyInterface::instance = NULL;
  * Exposes the Variable and vonBertalanffyInterface classes to R.
  */
 RCPP_EXPOSED_CLASS(Variable)
-RCPP_EXPOSED_CLASS(Variable2)
+RCPP_EXPOSED_CLASS(VariableVector)
 RCPP_EXPOSED_CLASS(vonBertalanffyInterface)
 
 /**
@@ -275,7 +332,7 @@ Rcpp::NumericVector get_parameter_vector() {
 
     return p;
 }
- 
+
 /**
  * Returns the initial values for the parameter set
  */
@@ -315,7 +372,16 @@ RCPP_MODULE(growth) {
     Rcpp::class_<Variable>("Variable")
             .constructor()
             .field("value", &Variable::value)
-            .field("estimable", &Variable::estimable);
+            .field("estimable", &Variable::estimable)
+            .field("parameter_index", &Variable::parameter_index)
+            .field("random_parameter_index", &Variable::random_parameter_index);
+    Rcpp::class_<VariableVector > ("VariableVector")
+            .constructor()
+            .constructor<size_t>()
+            .method("at", &VariableVector::at)
+            .method("set", &VariableVector::set)
+            .method("size", &VariableVector::size)
+            .method("resize", &VariableVector::resize);
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
             .constructor()
             .method("prepare", &vonBertalanffyInterface::prepare)
@@ -362,10 +428,10 @@ Type objective_function<Type>::operator()() {
 
     //get the parameter values
     PARAMETER_VECTOR(p)
-            
-     PARAMETER_VECTOR(r)
 
-    //update the parameter values for type Type
+    PARAMETER_VECTOR(r)
+
+            //update the parameter values for type Type
     for (int i = 0; i < model->parameters.size(); i++) {
         *model->parameters[i] = p[i];
     }

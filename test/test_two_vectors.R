@@ -143,7 +143,9 @@ vonB$prepare()
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
 ## Set the first and last 10 fish to be the same
 x <- 1:22
-x[c(1,3,5,7,9)] <- 50                   # Linf block 1
+x[c(vonB$log_l_inf[1]$parameter_index,vonB$log_l_inf[3]$parameter_index,
+vonB$log_l_inf[5]$parameter_index,vonB$log_l_inf[7]$parameter_index
+,vonB$log_l_inf[9]$parameter_index)] <- 50                   # Linf block 1
 x[10+c(1,3,5,7,9)] <- 51                # Linf block 2
 x[1+c(1,3,5,7,9)] <- 52                 # k block 1
 x[11+c(1,3,5,7,9)] <- 53                # k block 2
