@@ -8,7 +8,7 @@ library(ModularTMBExample)
 library(dplyr)
 library(ggplot2)
 library(tmbstan)
-library(shinystan)
+#library(shinystan)
 theme_set(theme_bw())
 
 ## simulate data, repeated measures for each fish so can use
@@ -46,12 +46,17 @@ vonB <- new(m$vonBertalanffy)
 vonB$log_k_mean$value <- log(.5)
 vonB$log_k_mean$estimable <- TRUE
 vonB$log_k_sigma$value <- log(.1)
-for(i in 1:nfish) vonB$log_k[i] <- 0
+
+
+vonB$log_k<- new(m$VariableVector, nfish)
+for(i in 1:nfish) vonB$log_k$set(i-1,0)
 ## initialize linf
 vonB$log_l_inf_mean$value <-log(10)
 vonB$log_l_inf_mean$estimable<- TRUE
 vonB$log_l_inf_sigma$value <- log(.1)
-for(i in 1:nfish) vonB$log_l_inf[i] <- 0
+
+vonB$log_l_inf<- new(m$VariableVector, nfish)
+for(i in 1:nfish) vonB$log_l_inf$set(i-1,0)
 vonB$a_min$value <- .001
 vonB$a_min$estimable <- FALSE
 #set data
@@ -134,7 +139,7 @@ sdreport(obj)
 ## fixed effects. The vectors alternate which is easier to see if
 ## I initialize them differently
 m$clear()
-for(i in 1:nfish) vonB$log_l_inf[i] <- .01
+for(i in 1:nfish) vonB$log_l_inf$set(i-1,0.01)
 vonB$log_k_is_random_effect <- FALSE
 vonB$log_l_inf_is_random_effect <- FALSE
 vonB$log_k_sigma$estimable <- FALSE
@@ -143,13 +148,35 @@ vonB$prepare()
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
 ## Set the first and last 10 fish to be the same
 x <- 1:22
-x[c(vonB$log_l_inf[1]$parameter_index,vonB$log_l_inf[3]$parameter_index,
-vonB$log_l_inf[5]$parameter_index,vonB$log_l_inf[7]$parameter_index
-,vonB$log_l_inf[9]$parameter_index)] <- 50                   # Linf block 1
-x[10+c(1,3,5,7,9)] <- 51                # Linf block 2
-x[1+c(1,3,5,7,9)] <- 52                 # k block 1
-x[11+c(1,3,5,7,9)] <- 53                # k block 2
+x[c(vonB$log_l_inf$at(1)$parameter_index,
+vonB$log_l_inf$at(3)$parameter_index,
+vonB$log_l_inf$at(5)$parameter_index,
+vonB$log_l_inf$at(7)$parameter_index
+,vonB$log_l_inf$at(9)$parameter_index)] <- 50                   # Linf block 1
+x[10+c(vonB$log_l_inf$at(1)$parameter_index,
+vonB$log_l_inf$at(3)$parameter_index,
+vonB$log_l_inf$at(5)$parameter_index,
+vonB$log_l_inf$at(7)$parameter_index,
+vonB$log_l_inf$at(9)$parameter_index
+)] <- 51                # Linf block 2
+x[1+c(vonB$log_l_inf$at(1)$parameter_index,
+vonB$log_l_inf$at(3)$parameter_index,
+vonB$log_l_inf$at(5)$parameter_index,
+vonB$log_l_inf$at(7)$parameter_index,
+vonB$log_l_inf$at(9)$parameter_index
+)] <- 52                 # k block 1
+x[11+c(vonB$log_l_inf$at(1)$parameter_index,
+vonB$log_l_inf$at(3)$parameter_index,
+vonB$log_l_inf$at(5)$parameter_index,
+vonB$log_l_inf$at(7)$parameter_index,
+vonB$log_l_inf$at(9)$parameter_index
+)] <- 53                # k block 2
+
 map <- list(p=factor(x))
+print(map)
+length(map)
+length(parameters)
+
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE, map=map)
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
@@ -157,11 +184,11 @@ g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
 ggplot(obs, aes(age, pred, color=factor(fish))) + geom_line()
 obj$report()
 sdreport(obj)
-
+q()
 
 ## Map off parts of a vector. E.g. turn off estimation for some fish
 m$clear()
-for(i in 1:nfish) vonB$log_l_inf[i] <- 0
+for(i in 1:nfish) vonB$log_l_infset(i-1,0)
 vonB$prepare()
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
 ## Same as above but turn off estimation of Linf for first 5 fish

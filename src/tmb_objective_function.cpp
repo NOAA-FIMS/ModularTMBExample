@@ -32,8 +32,8 @@ public:
     bool estimable = false;
     bool is_random_effect = false;
     double value = 0;
-    size_t parameter_index;
-    size_t random_parameter_index;
+    int parameter_index = -999;
+    int random_parameter_index = -999;
 
     Variable() {
         Variable::parameters.push_back(this);
@@ -57,9 +57,9 @@ public:
     }
 
     void resize(size_t size) {
-        std::cout<<"resizing to "<<size<<std::endl;
+        std::cout << "resizing to " << size << std::endl;
         x.resize(size);
-        std::cout<<x.size()<<std::endl;
+        std::cout << x.size() << std::endl;
     }
 
     Variable at(size_t index) {
@@ -72,7 +72,7 @@ public:
 
     void set(size_t index, double v) {
         if (index >= x.size()) {
-            Rcout << "index out of bounds: "<<index<<" < "<<x.size()-1<<"\n";
+            Rcout << "index out of bounds: " << index << " < " << x.size() - 1 << "\n";
             return;
         }
         x[index].value = v;
@@ -82,7 +82,7 @@ public:
         return x.size();
     }
 
-    size_t get_parameter_index(size_t index) {
+    int get_parameter_index(size_t index) {
         return x[index].parameter_index;
     }
 
