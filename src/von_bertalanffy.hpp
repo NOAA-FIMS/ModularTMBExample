@@ -20,6 +20,7 @@ public:
     std::vector<int> fish;
     std::vector<Type*> parameters;
     std::vector<Type*> random_effects;
+    std::vector<const char*> parameter_names;
     int nfish;
     Type log_k_mean;
     Type log_l_inf_mean;

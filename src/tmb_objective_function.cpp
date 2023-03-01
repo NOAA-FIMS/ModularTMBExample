@@ -20,6 +20,7 @@
 
 Rcpp::NumericVector get_parameter_vector();
 Rcpp::NumericVector get_random_effects_vector();
+Rcpp::List get_parameter_list();
 
 /**
  * Rcpp representation of a variable
@@ -125,6 +126,7 @@ public:
                     model->random_effects.push_back(&model->log_l_inf[i]);
                 } else {
                     model->parameters.push_back(&model->log_l_inf[i]);
+                    model->parameter_names.push_back("log_l_inf");
                 }
             }
 
@@ -134,6 +136,7 @@ public:
                     model->random_effects.push_back(&model->log_k[i]);
                 } else {
                     model->parameters.push_back(&model->log_k[i]);
+                    model->parameter_names.push_back("log_k");
                 }
             }
         }
@@ -141,15 +144,19 @@ public:
 
         if (this->log_k_mean.estimable) {
             model->parameters.push_back(&model->log_k_mean);
+            model->parameter_names.push_back("log_k_mean");
         }
         if (this->log_k_sigma.estimable) {
             model->parameters.push_back(&model->log_k_sigma);
+            model->parameter_names.push_back("log_k_sigma");
         }
         if (this->log_l_inf_mean.estimable) {
             model->parameters.push_back(&model->log_l_inf_mean);
+            model->parameter_names.push_back("log_l_inf_mean");
         }
         if (this->log_l_inf_sigma.estimable) {
             model->parameters.push_back(&model->log_l_inf_sigma);
+            model->parameter_names.push_back("log_l_inf_sigma");
         }
         //        for (int i = 0; i<this->nfish; i++) {
         //            if (this->log_k.estimable[i]) {
@@ -161,6 +168,7 @@ public:
         //        }
         if (this->a_min.estimable) {
             model->parameters.push_back(&model->a_min);
+            model->parameter_names.push_back("a_min");
         }
 
 
@@ -275,6 +283,21 @@ Rcpp::NumericVector get_parameter_vector() {
 
     return p;
 }
+
+Rcpp::StringVector get_parameter_list(){
+        VonBertalanffyModel<double>* model =
+            VonBertalanffyModel<double>::getInstance();
+    Rcpp::StringVector ns;
+    Rcpp::NumericVector vals;
+
+    for (int i = 0; i < model->parameters.size(); i++) {
+        ns.push_back(*model->parameter_names[i]);
+        vals.push_back(*model->parameters[i]);
+    }
+
+    return  Rcpp::List::create(Rcpp::Named("names") = ns,
+    Rcpp::Named("values") = vals);
+}
  
 /**
  * Returns the initial values for the parameter set
@@ -341,6 +364,7 @@ RCPP_MODULE(growth) {
     //            .field("k", &vonBertalanffyInterface::k);
     Rcpp::function("get_parameter_vector", get_parameter_vector);
     Rcpp::function("get_random_effects_vector", get_random_effects_vector);
+    Rcpp::function("get_parameter_list", get_parameter_list);
     Rcpp::function("clear", clear);
 };
 
