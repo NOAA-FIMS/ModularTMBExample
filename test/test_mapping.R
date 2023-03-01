@@ -84,26 +84,22 @@ vonB$log_k[[1]]$estimable<-TRUE#$estimable<-FALSE
 vonB$log_k[[1]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
 vonB$log_k[[5]]$estimable<-TRUE#$estimable<-FALSE
 vonB$log_k[[5]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
-#set up map
+#set up mapping
 for(i in 2:5){
-    #vonB$log_l_inf$estimated(i-1, FALSE)
-   # m$map_to(vonB$log_l_inf$at(i-1), vonB$log_l_inf$at(0))
+    vonB$log_l_inf[[i]]$estimable<-FALSE
+    vonB$log_k[[i]]$estimable<-FALSE
+    m$map_to(vonB$log_l_inf[[i]], vonB$log_l_inf[[0]])
+    m$map_to(vonB$log_k[[i]], vonB$log_k[[0]])
 }
 
 for(i in 6:length(vonB$log_l_inf)){
-    #vonB$log_l_inf$estimated(i-1, FALSE)
-    #m$map_to(vonB$log_l_inf$at(i-1), vonB$log_l_inf$at(5))
+    vonB$log_l_inf[[i]]$estimable<-FALSE
+    vonB$log_k[[i]]$estimable<-FALSE
+    m$map_to(vonB$log_l_inf[[i]], vonB$log_l_inf[[5]])
+    m$map_to(vonB$log_k[[i]], vonB$log_k[[5]])
 }
 
-for(i in 2:5){
-    #vonB$log_k$estimated(i-1, FALSE)
-    #m$map_to(vonB$log_k$at(i-1), vonB$log_k$at(0))
-}
 
-for(i in 6:length(vonB$log_k)){
-    #vonB$log_k$estimated(i-1, FALSE)
-    #m$map_to(vonB$log_k$at(i-1), vonB$log_k$at(5))
-}
 
 vonB$prepare()
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
