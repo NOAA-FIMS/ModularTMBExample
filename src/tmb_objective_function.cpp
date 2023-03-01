@@ -154,7 +154,6 @@ public:
     vonBertalanffyInterface(size_t nfish) {
         this->log_k = Rcpp::List(nfish + 1);
         this->log_l_inf = Rcpp::List(nfish + 1);
-        std::stringstream ss;
         for (int i = 0; i <= nfish; i++) {
             this->log_l_inf[i] = Variable();
             std::cout << "can access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
@@ -166,10 +165,7 @@ public:
     template<class Type>
     void prepare_template() {
 
-        // if(this->obs.size() != this->ages.size()){
-        //     std::cout<<"Error: ages vector length not equal to obs vector length, abort\n";
-        //     return;
-        // }
+     
 
         if (this->obs.size() != this->ages.size()) {
             Rcpp::stop("ages vector length not equal to obs vector length");
@@ -178,7 +174,6 @@ public:
         VonBertalanffyModel<Type>* model =
                 VonBertalanffyModel<Type>::getInstance();
 
-        // model->clear();
 
         model->predicted.resize(this->obs.size());
         model->log_l_inf.resize(this->obs.size());
@@ -214,46 +209,35 @@ public:
         this->log_l_inf_sigma.variable_index = model->variables.size() - 1;
 
         for (int i = 0; i <= nfish; i++) {
-  
             std::cout << "can't access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << std::endl;
-            //            model->log_l_inf[i] = (log_l_inf.value);
-            //            model->variables.push_back(&model->log_l_inf[i]);
-            //            log_l_inf.variable_index = model->variables.size() - 1;
-            //
-            //            if (log_l_inf.estimable) {
-            //                std::cout << "log_l_inf[" << i << "] is estimated\n";
-            //                if (log_l_inf.is_random_effect) {
-            //                    std::cout << "log_l_inf[" << i << "] is random effect\n";
-            //                    model->random_effects.push_back(&model->log_l_inf[i]);
-            //                    log_l_inf.random_parameter_index = model->random_effects.size() - 1;
-            //                } else {
-            //                    std::cout << "log_l_inf[" << i << "] is not random effect\n";
-            //                    model->parameters.push_back(&model->log_l_inf[i]);
-            //                    log_l_inf.parameter_index = model->parameters.size() - 1;
-            //                }
-            //            } else {
-            //                std::cout << "log_l_inf[" << i << "] is not estimated\n";
-            //            }
-            //
-            //            Variable log_k = Rcpp::as<Variable>(this->log_k[i]);
-            //            model->log_k[i] = (log_k.value);
-            //            model->variables.push_back(&model->log_k[i]);
-            //            log_k.variable_index = model->variables.size() - 1;
-            //
-            //            if (log_k.estimable) {
-            //                std::cout << "log_k[" << i << "] is estimated\n";
-            //                if (log_k.is_random_effect) {
-            //                    std::cout << "log_k[" << i << "] is random effect\n";
-            //                    model->random_effects.push_back(&model->log_k[i]);
-            //                    log_k.random_parameter_index = model->random_effects.size() - 1;
-            //                } else {
-            //                    std::cout << "log_k[" << i << "] is not random effect\n";
-            //                    model->parameters.push_back(&model->log_k[i]);
-            //                    log_k.parameter_index = model->parameters.size() - 1;
-            //                }
-            //            } else {
-            //                std::cout << "log_k[" << i << "] is not estimated\n";
-            //            }
+                        model->log_l_inf[i] = (log_l_inf.value);
+                        model->variables.push_back(&model->log_l_inf[i]);
+                        log_l_inf.variable_index = model->variables.size() - 1;
+            
+                        if (log_l_inf.estimable) {
+                            if (log_l_inf.is_random_effect) {
+                                model->random_effects.push_back(&model->log_l_inf[i]);
+                                log_l_inf.random_parameter_index = model->random_effects.size() - 1;
+                            } else {
+                                model->parameters.push_back(&model->log_l_inf[i]);
+                                log_l_inf.parameter_index = model->parameters.size() - 1;
+                            }
+                        } 
+            
+                        Variable log_k = Rcpp::as<Variable>(this->log_k[i]);
+                        model->log_k[i] = (log_k.value);
+                        model->variables.push_back(&model->log_k[i]);
+                        log_k.variable_index = model->variables.size() - 1;
+            
+                        if (log_k.estimable) {
+                            if (log_k.is_random_effect) {
+                                model->random_effects.push_back(&model->log_k[i]);
+                                log_k.random_parameter_index = model->random_effects.size() - 1;
+                            } else {
+                                model->parameters.push_back(&model->log_k[i]);
+                                log_k.parameter_index = model->parameters.size() - 1;
+                            }
+                        } 
         }
 
 
@@ -273,14 +257,7 @@ public:
             model->parameters.push_back(&model->log_l_inf_sigma);
             this->log_l_inf_sigma.parameter_index = model->parameters.size() - 1;
         }
-        //        for (int i = 0; i<this->nfish; i++) {
-        //            if (this->log_k.estimable[i]) {
-        //                model->parameters.push_back(&model->log_k[i]);
-        //            }
-        //            if (this->log_l_inf.estimable[i]) {
-        //                model->parameters.push_back(&model->log_l_inf[i]);
-        //            }
-        //        }
+      
         if (this->a_min.estimable) {
             model->parameters.push_back(&model->a_min);
             this->a_min.parameter_index = model->parameters.size() - 1;
