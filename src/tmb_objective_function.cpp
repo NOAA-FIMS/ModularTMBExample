@@ -159,13 +159,21 @@ public:
             std::cout << "can access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
             this->log_k[i] = Variable();
         }
-      
+
+    }
+
+    void check_list() {
+        for (int i = 0; i < nfish; i++) {
+
+            std::cout <<i<< "can access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
+         
+        }
     }
 
     template<class Type>
     void prepare_template() {
 
-     
+
 
         if (this->obs.size() != this->ages.size()) {
             Rcpp::stop("ages vector length not equal to obs vector length");
@@ -208,36 +216,36 @@ public:
         model->variables.push_back(&model->log_l_inf_sigma);
         this->log_l_inf_sigma.variable_index = model->variables.size() - 1;
 
-        for (int i = 0; i <= nfish; i++) {
+        for (int i = 0; i < nfish; i++) {
             std::cout << "can't access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << std::endl;
-                        model->log_l_inf[i] = (log_l_inf.value);
-                        model->variables.push_back(&model->log_l_inf[i]);
-                        log_l_inf.variable_index = model->variables.size() - 1;
-            
-                        if (log_l_inf.estimable) {
-                            if (log_l_inf.is_random_effect) {
-                                model->random_effects.push_back(&model->log_l_inf[i]);
-                                log_l_inf.random_parameter_index = model->random_effects.size() - 1;
-                            } else {
-                                model->parameters.push_back(&model->log_l_inf[i]);
-                                log_l_inf.parameter_index = model->parameters.size() - 1;
-                            }
-                        } 
-            
-                        Variable log_k = Rcpp::as<Variable>(this->log_k[i]);
-                        model->log_k[i] = (log_k.value);
-                        model->variables.push_back(&model->log_k[i]);
-                        log_k.variable_index = model->variables.size() - 1;
-            
-                        if (log_k.estimable) {
-                            if (log_k.is_random_effect) {
-                                model->random_effects.push_back(&model->log_k[i]);
-                                log_k.random_parameter_index = model->random_effects.size() - 1;
-                            } else {
-                                model->parameters.push_back(&model->log_k[i]);
-                                log_k.parameter_index = model->parameters.size() - 1;
-                            }
-                        } 
+//            model->log_l_inf[i] = (log_l_inf.value);
+//            model->variables.push_back(&model->log_l_inf[i]);
+//            log_l_inf.variable_index = model->variables.size() - 1;
+//
+//            if (log_l_inf.estimable) {
+//                if (log_l_inf.is_random_effect) {
+//                    model->random_effects.push_back(&model->log_l_inf[i]);
+//                    log_l_inf.random_parameter_index = model->random_effects.size() - 1;
+//                } else {
+//                    model->parameters.push_back(&model->log_l_inf[i]);
+//                    log_l_inf.parameter_index = model->parameters.size() - 1;
+//                }
+//            }
+//
+//            Variable log_k = Rcpp::as<Variable>(this->log_k[i]);
+//            model->log_k[i] = (log_k.value);
+//            model->variables.push_back(&model->log_k[i]);
+//            log_k.variable_index = model->variables.size() - 1;
+//
+//            if (log_k.estimable) {
+//                if (log_k.is_random_effect) {
+//                    model->random_effects.push_back(&model->log_k[i]);
+//                    log_k.random_parameter_index = model->random_effects.size() - 1;
+//                } else {
+//                    model->parameters.push_back(&model->log_k[i]);
+//                    log_k.parameter_index = model->parameters.size() - 1;
+//                }
+//            }
         }
 
 
@@ -257,7 +265,7 @@ public:
             model->parameters.push_back(&model->log_l_inf_sigma);
             this->log_l_inf_sigma.parameter_index = model->parameters.size() - 1;
         }
-      
+
         if (this->a_min.estimable) {
             model->parameters.push_back(&model->a_min);
             this->a_min.parameter_index = model->parameters.size() - 1;
@@ -463,6 +471,7 @@ RCPP_MODULE(growth) {
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
             .constructor<size_t>()
             .method("prepare", &vonBertalanffyInterface::prepare)
+             .method("check_list", &vonBertalanffyInterface::check_list)
             .method("finalize", &vonBertalanffyInterface::finalize)
             .method("show", &vonBertalanffyInterface::show_)
             .field("log_k_mean", &vonBertalanffyInterface::log_k_mean)
