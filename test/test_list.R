@@ -93,15 +93,23 @@ vonB$log_k_is_estimated <- TRUE
 vonB$prepare()
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE)
+n <- m$get_parameter_list()$names 
+names(obj$env$par) <- n
+names(obj$par) <- n
 opt <- with(obj, nlminb(par, fn, gr))
+sdreport(obj)
 obs$pred <- obj$report()$pred
 g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
+m$get_parameter_list() 
+
 
 ## Turn on marginal ML estimation of Linf vector (but not k)
 m$clear()
 vonB$log_l_inf_is_random_effect <- TRUE
 vonB$log_l_inf_sigma$estimable <- TRUE
+
 vonB$prepare()
+inlist <- m$get_parameter_list() 
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE, random='r')
 opt <- with(obj, nlminb(par, fn, gr))

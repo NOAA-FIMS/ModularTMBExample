@@ -98,6 +98,7 @@ public:
         model->ages.resize(this->ages.size());
         model->obs.resize(this->obs.size());
         model->fish.resize(this->fish.size());
+        model->parameter_names.resize(100)
         for (int i = 0; i < this->obs.size(); i++) {
             model->ages[i] = this->ages[i];
             model->obs[i] = this->obs[i];
@@ -118,45 +119,59 @@ public:
         model->log_l_inf.resize(this->obs.size());
         // model->log_l_inf = this->log_l_inf;
         // model->log_k = this->log_k;
-
+size_t index;
         for (int i = 0; i < nfish; i++) {
             model->log_l_inf[i] = (this->log_l_inf[i]);
             if (this->log_l_inf_is_estimated) {
                 if (this->log_l_inf_is_random_effect) {
                     model->random_effects.push_back(&model->log_l_inf[i]);
+                    index = model->parameters.size() - 1;
                 } else {
                     model->parameters.push_back(&model->log_l_inf[i]);
-                    model->parameter_names.push_back("log_l_inf");
+                    
                 }
+                
+                model->parameter_names[index] ="log_l_inf";
             }
 
             model->log_k[i] = (this->log_k[i]);
             if (this->log_k_is_estimated) {
                 if (this->log_k_is_random_effect) {
                     model->random_effects.push_back(&model->log_k[i]);
+                    
                 } else {
                     model->parameters.push_back(&model->log_k[i]);
-                    model->parameter_names.push_back("log_k");
                 }
+                index = model->parameters.size() - 1;
+                model->parameter_names[index] ="log_k";
             }
         }
 
 
         if (this->log_k_mean.estimable) {
             model->parameters.push_back(&model->log_k_mean);
-            model->parameter_names.push_back("log_k_mean");
+            
+                index = model->parameters.size() - 1;
+                model->parameter_names[index] ="log_k_mean";
         }
         if (this->log_k_sigma.estimable) {
             model->parameters.push_back(&model->log_k_sigma);
-            model->parameter_names.push_back("log_k_sigma");
+            
+                index = model->parameters.size() - 1;
+                model->parameter_names[index] ="log_k_sigma";
         }
         if (this->log_l_inf_mean.estimable) {
             model->parameters.push_back(&model->log_l_inf_mean);
-            model->parameter_names.push_back("log_l_inf_mean");
+            
+                index = model->parameters.size() - 1;
+                model->parameter_names[index] ="log_l_inf_mean";
         }
         if (this->log_l_inf_sigma.estimable) {
             model->parameters.push_back(&model->log_l_inf_sigma);
             model->parameter_names.push_back("log_l_inf_sigma");
+            
+                index = model->parameters.size() - 1;
+                model->parameter_names[index] ="log_l_inf_sigma";
         }
         //        for (int i = 0; i<this->nfish; i++) {
         //            if (this->log_k.estimable[i]) {
@@ -169,6 +184,9 @@ public:
         if (this->a_min.estimable) {
             model->parameters.push_back(&model->a_min);
             model->parameter_names.push_back("a_min");
+            
+                index = model->parameters.size() - 1;
+                model->parameter_names[index] ="a_min";
         }
 
 
