@@ -98,7 +98,7 @@ public:
         model->ages.resize(this->ages.size());
         model->obs.resize(this->obs.size());
         model->fish.resize(this->fish.size());
-        model->parameter_names.resize(100)
+        model->parameter_names.resize(100);
         for (int i = 0; i < this->obs.size(); i++) {
             model->ages[i] = this->ages[i];
             model->obs[i] = this->obs[i];
