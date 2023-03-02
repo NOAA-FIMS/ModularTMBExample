@@ -84,6 +84,7 @@ vonB$log_k[[1]]$estimable<-TRUE#$estimable<-FALSE
 vonB$log_k[[1]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
 vonB$log_k[[5]]$estimable<-TRUE#$estimable<-FALSE
 vonB$log_k[[5]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
+
 #set up mapping
 for(i in 2:5){
     vonB$log_l_inf[[i]]$estimable<-FALSE
