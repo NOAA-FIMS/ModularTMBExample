@@ -284,14 +284,14 @@ Rcpp::NumericVector get_parameter_vector() {
     return p;
 }
 
-Rcpp::StringVector get_parameter_list(){
+Rcpp::List get_parameter_list(){
         VonBertalanffyModel<double>* model =
             VonBertalanffyModel<double>::getInstance();
     Rcpp::StringVector ns;
     Rcpp::NumericVector vals;
 
     for (int i = 0; i < model->parameters.size(); i++) {
-        ns.push_back(*model->parameter_names[i]);
+        ns.push_back(model->parameter_names[i]);
         vals.push_back(*model->parameters[i]);
     }
 
