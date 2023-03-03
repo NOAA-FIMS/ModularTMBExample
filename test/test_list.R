@@ -14,8 +14,6 @@ devtools::load_all("C:/Users/chris/noaa-git/ModularTMBExample")
 ## simulate data, repeated measures for each fish so can use
 ## random effects
 set.seed(2342)
-source("R/simulate_data.R")
-source("R/order_names.R")
 obs <- simulate_data()
 #g <- ggplot(obs, aes(age, length)) + geom_line() +
 #  geom_point(mapping=aes(y=obs), col=2) +
@@ -144,16 +142,22 @@ vonB$log_k_sigma$estimable <- FALSE
 vonB$log_l_inf_sigma$estimable <- FALSE
 vonB$prepare()
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
+fnames <- m$get_parameter_map() 
+
+linfs <- grep("log_l_inf_[0-9]", names(fnames$fixed))
+ks <- grep("log_k_[0-9]", names(fnames$fixed))
 ## Set the first and last 10 fish to be the same
 x <- 1:22
-x[c(1,3,5,7,9)] <- 50                   # Linf block 1
-x[10+c(1,3,5,7,9)] <- 51                # Linf block 2
-x[1+c(1,3,5,7,9)] <- 52                 # k block 1
-x[11+c(1,3,5,7,9)] <- 53                # k block 2
+x[fnames$fixed[linfs[1:5]]] <- 50                   # Linf block 1
+x[fnames$fixed[linfs[6:10]]] <- 51                # Linf block 2
+x[fnames$fixed[ks[1:5]]] <- 52                 # k block 1
+x[fnames$fixed[ks[6:10]]] <- 53                # k block 2
+x[c(21,22)] <- 53
 map <- list(p=factor(x))
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE, map=map)
-names(obj$env$par) <- order_names(m)
-names(obj$par) <- order_names(m)
+name_list <- lapply(m$get_parameter_map(), order_names)
+names(obj$env$par) <- order_names(m$get_parameter_map()$fixed) # not working
+names(obj$par) <- order_names(m$get_parameter_map()$fixed)
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
 g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
@@ -201,8 +205,9 @@ vonB$log_l_inf_sigma$estimable <- TRUE
 vonB$prepare()
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE, random='r')
-names(obj$env$par) <- order_names(m)
-names(obj$par) <- order_names(m)
+name_list <- lapply(m$get_parameter_map(), order_names)
+names(obj$env$par) <- c(name_list$fixed, name_list$random)
+names(obj$par) <- order_names(m$get_parameter_map()$fixed)
 opt <- with(obj, nlminb(par, fn, gr))
 library(tmbstan)
 fit <- tmbstan(obj, iter=1500, chains=3, init='last.par.best')
