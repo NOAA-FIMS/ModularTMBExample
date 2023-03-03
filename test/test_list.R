@@ -15,6 +15,7 @@ devtools::load_all("C:/Users/chris/noaa-git/ModularTMBExample")
 ## random effects
 set.seed(2342)
 source("R/simulate_data.R")
+source("R/order_names.R")
 obs <- simulate_data()
 #g <- ggplot(obs, aes(age, length)) + geom_line() +
 #  geom_point(mapping=aes(y=obs), col=2) +
@@ -69,15 +70,15 @@ obj <- MakeADFun(data=list(), parameters,
 obj$fn()
 str(obj$report())
 obs$pred0 <- obj$report()$pred
-m$get_parameter_list() 
-
+names(obj$env$par) <- order_names(m$get_parameter_map()$fixed) 
+names(obj$par) <- order_names(m$get_parameter_map()$fixed) 
 #vonB$finalize()
 #vonB$show()
 ## optimize
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
  sdreport(obj)
-g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
+##g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
 ## fit <- tmbstan(obj, init='last.par.best', chains=1)
 ## launch_shinystan(fit)
 
@@ -86,22 +87,19 @@ g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
 ### code chunk above!!!
 
 ## Penalized ML: turn on RE vectors but leave sigmas off at the
-## truth and treat the RE as FE
+## truth and treat the RE as FE 
 m$clear()
 vonB$log_l_inf_is_estimated <- TRUE
 vonB$log_k_is_estimated <- TRUE
 vonB$prepare()
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE)
-n <- m$get_parameter_list()$names 
-names(obj$env$par) <- n
-names(obj$par) <- n
+names(obj$env$par) <- order_names(m$get_parameter_map()$fixed)
+names(obj$par) <- order_names(m$get_parameter_map()$fixed)
 opt <- with(obj, nlminb(par, fn, gr))
 sdreport(obj)
 obs$pred <- obj$report()$pred
-g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
-m$get_parameter_list() 
-
+#g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
 
 ## Turn on marginal ML estimation of Linf vector (but not k)
 m$clear()
@@ -109,12 +107,15 @@ vonB$log_l_inf_is_random_effect <- TRUE
 vonB$log_l_inf_sigma$estimable <- TRUE
 
 vonB$prepare()
-inlist <- m$get_parameter_list() 
+inlist <- m$get_parameter_map() 
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE, random='r')
+name_list <- lapply(m$get_parameter_map(), order_names)
+names(obj$env$par) <- c(name_list$fixed, name_list$random)
+names(obj$par) <- order_names(m$get_parameter_map()$fixed)
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
-g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
+#g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
 sdreport(obj)
 
 ## Full RE estimation of both vectors
@@ -124,6 +125,9 @@ vonB$log_k_sigma$estimable <- TRUE
 vonB$prepare()
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE, random='r')
+name_list <- lapply(m$get_parameter_map(), order_names)
+names(obj$env$par) <- c(name_list$fixed, name_list$random)
+names(obj$par) <- order_names(m$get_parameter_map()$fixed)
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
 g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
@@ -148,6 +152,8 @@ x[1+c(1,3,5,7,9)] <- 52                 # k block 1
 x[11+c(1,3,5,7,9)] <- 53                # k block 2
 map <- list(p=factor(x))
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE, map=map)
+names(obj$env$par) <- order_names(m)
+names(obj$par) <- order_names(m)
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
 g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
@@ -170,6 +176,8 @@ x[1+c(1,3,5,7,9)] <- 52                 # k block 1
 x[11+c(1,3,5,7,9)] <- 53                # k block 2
 map <- list(p=factor(x))
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE, map=map)
+names(obj$env$par) <- order_names(m)
+names(obj$par) <- order_names(m)
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
 g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
@@ -193,6 +201,8 @@ vonB$log_l_inf_sigma$estimable <- TRUE
 vonB$prepare()
 (parameters <- list(p = m$get_parameter_vector(), r=m$get_random_effects_vector()))
 obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=TRUE, random='r')
+names(obj$env$par) <- order_names(m)
+names(obj$par) <- order_names(m)
 opt <- with(obj, nlminb(par, fn, gr))
 library(tmbstan)
 fit <- tmbstan(obj, iter=1500, chains=3, init='last.par.best')

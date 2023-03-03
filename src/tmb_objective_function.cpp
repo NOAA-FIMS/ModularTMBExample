@@ -98,7 +98,6 @@ public:
         model->ages.resize(this->ages.size());
         model->obs.resize(this->obs.size());
         model->fish.resize(this->fish.size());
-        model->parameter_names.resize(100);
         for (int i = 0; i < this->obs.size(); i++) {
             model->ages[i] = this->ages[i];
             model->obs[i] = this->obs[i];
@@ -119,19 +118,22 @@ public:
         model->log_l_inf.resize(this->obs.size());
         // model->log_l_inf = this->log_l_inf;
         // model->log_k = this->log_k;
-size_t index;
         for (int i = 0; i < nfish; i++) {
             model->log_l_inf[i] = (this->log_l_inf[i]);
             if (this->log_l_inf_is_estimated) {
                 if (this->log_l_inf_is_random_effect) {
                     model->random_effects.push_back(&model->log_l_inf[i]);
-                    index = model->parameters.size() - 1;
+                   
+                    model->random_effect_names.insert(std::make_pair("log_l_inf_" + 
+                    std::to_string(i), model->random_effects.size()-1));
                 } else {
                     model->parameters.push_back(&model->log_l_inf[i]);
                     
+                model->parameter_names.insert(std::make_pair("log_l_inf_" + 
+                std::to_string(i), model->parameters.size()-1));
                 }
-                
-                model->parameter_names[index] ="log_l_inf";
+
+
             }
 
             model->log_k[i] = (this->log_k[i]);
@@ -139,39 +141,44 @@ size_t index;
                 if (this->log_k_is_random_effect) {
                     model->random_effects.push_back(&model->log_k[i]);
                     
+                model->random_effect_names.insert(std::make_pair("log_k" + 
+                std::to_string(i), model->random_effects.size()-1));
+                    
                 } else {
                     model->parameters.push_back(&model->log_k[i]);
+                    
+                model->parameter_names.insert(std::make_pair("log_k_" + 
+                std::to_string(i), model->parameters.size()-1));
                 }
-                index = model->parameters.size() - 1;
-                model->parameter_names[index] ="log_k";
-            }
+                
+      
+           }
         }
 
 
         if (this->log_k_mean.estimable) {
             model->parameters.push_back(&model->log_k_mean);
-            
-                index = model->parameters.size() - 1;
-                model->parameter_names[index] ="log_k_mean";
+            model->parameter_names.insert(std::make_pair("log_k_mean", 
+            model->parameters.size()-1));
+
+        
         }
         if (this->log_k_sigma.estimable) {
             model->parameters.push_back(&model->log_k_sigma);
-            
-                index = model->parameters.size() - 1;
-                model->parameter_names[index] ="log_k_sigma";
+            model->parameter_names.insert(std::make_pair("log_k_sigma",
+             model->parameters.size()-1));
         }
         if (this->log_l_inf_mean.estimable) {
             model->parameters.push_back(&model->log_l_inf_mean);
             
-                index = model->parameters.size() - 1;
-                model->parameter_names[index] ="log_l_inf_mean";
+            model->parameter_names.insert(std::make_pair("log_l_inf_mean", 
+            model->parameters.size()-1));
+        
         }
         if (this->log_l_inf_sigma.estimable) {
             model->parameters.push_back(&model->log_l_inf_sigma);
-            model->parameter_names.push_back("log_l_inf_sigma");
-            
-                index = model->parameters.size() - 1;
-                model->parameter_names[index] ="log_l_inf_sigma";
+            model->parameter_names.insert(std::make_pair("log_l_inf_sigma", 
+            model->parameters.size()-1));
         }
         //        for (int i = 0; i<this->nfish; i++) {
         //            if (this->log_k.estimable[i]) {
@@ -183,10 +190,8 @@ size_t index;
         //        }
         if (this->a_min.estimable) {
             model->parameters.push_back(&model->a_min);
-            model->parameter_names.push_back("a_min");
-            
-                index = model->parameters.size() - 1;
-                model->parameter_names[index] ="a_min";
+            model->parameter_names.insert(std::make_pair("a_min", 
+            model->parameters.size()-1));
         }
 
 
@@ -222,8 +227,6 @@ size_t index;
         }
 
         double f = model->evaluate();
-
-
 
         this->log_k_mean.value = model->log_k_mean;
         this->log_k_sigma.value = model->log_k_sigma;
@@ -302,19 +305,11 @@ Rcpp::NumericVector get_parameter_vector() {
     return p;
 }
 
-Rcpp::List get_parameter_list(){
-        VonBertalanffyModel<double>* model =
-            VonBertalanffyModel<double>::getInstance();
-    Rcpp::StringVector ns;
-    Rcpp::NumericVector vals;
-
-    for (int i = 0; i < model->parameters.size(); i++) {
-        ns.push_back(model->parameter_names[i]);
-        vals.push_back(*model->parameters[i]);
-    }
-
-    return  Rcpp::List::create(Rcpp::Named("names") = ns,
-    Rcpp::Named("values") = vals);
+Rcpp::List get_parameter_map(){
+    VonBertalanffyModel<double>* model =
+        VonBertalanffyModel<double>::getInstance();
+    return  Rcpp::List::create(Rcpp::Named("fixed") = Rcpp::wrap(model->parameter_names),
+    Rcpp::Named("random") = Rcpp::wrap(model->random_effect_names));
 }
  
 /**
@@ -347,6 +342,12 @@ void clear() {
     VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>::getInstance()->random_effects.clear();
     VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>::getInstance()->random_effects.clear();
     VonBertalanffyModel<TMB_FIMS_THIRD_ORDER>::getInstance()->random_effects.clear();
+ 
+    VonBertalanffyModel<TMB_FIMS_REAL_TYPE>::getInstance()->parameter_names.clear();
+    VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>::getInstance()->parameter_names.clear();
+    VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>::getInstance()->parameter_names.clear();
+    VonBertalanffyModel<TMB_FIMS_THIRD_ORDER>::getInstance()->parameter_names.clear();
+
 }
 
 /**
@@ -382,7 +383,7 @@ RCPP_MODULE(growth) {
     //            .field("k", &vonBertalanffyInterface::k);
     Rcpp::function("get_parameter_vector", get_parameter_vector);
     Rcpp::function("get_random_effects_vector", get_random_effects_vector);
-    Rcpp::function("get_parameter_list", get_parameter_list);
+    Rcpp::function("get_parameter_map", get_parameter_map);
     Rcpp::function("clear", clear);
 };
 

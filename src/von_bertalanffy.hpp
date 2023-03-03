@@ -2,6 +2,8 @@
 #define  VONBERTALANFFY_HPP
 
 #include <vector>
+#include <map>
+#include <string>
 #include "interface.hpp"
 
 /**
@@ -20,7 +22,9 @@ public:
     std::vector<int> fish;
     std::vector<Type*> parameters;
     std::vector<Type*> random_effects;
-    std::vector<std::string> parameter_names;
+    std::map<std::string, int> parameter_names;
+    std::map<std::string, int> random_effect_names;
+    
     int nfish;
     Type log_k_mean;
     Type log_l_inf_mean;
