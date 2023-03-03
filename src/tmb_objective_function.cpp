@@ -357,22 +357,22 @@ public:
 vonBertalanffyInterface* vonBertalanffyInterface::instance = NULL;
 
 void MapTo(const Variable& a, const Variable& b) {
-//
-//    if (a.variable_index == -999) {
-//        Rcout << "error: variable \"a\" not on variable list\n";
-//    }
-//
-//    if (b.variable_index == -999) {
-//        Rcout << "error: variable \"b\" not on variable list\n";
-//    }
-//
-//    std::pair<size_t, size_t> p;
-//    p.first = a.id;
-//    p.second = b.id;
-//    VonBertalanffyModel<TMB_FIMS_REAL_TYPE>::getInstance()->variable_pairs.push_back(p);
-//    VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>::getInstance()->variable_pairs.push_back(p);
-//    VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>::getInstance()->variable_pairs.push_back(p);
-//    VonBertalanffyModel<TMB_FIMS_THIRD_ORDER>::getInstance()->variable_pairs.push_back(p);
+
+    if (a.variable_index == -999) {
+        Rcout << "error: variable \"a\" not on variable list\n";
+    }
+
+    if (b.variable_index == -999) {
+        Rcout << "error: variable \"b\" not on variable list\n";
+    }
+
+    std::pair<size_t, size_t> p;
+    p.first = a.id;
+    p.second = b.id;
+    VonBertalanffyModel<TMB_FIMS_REAL_TYPE>::getInstance()->variable_pairs.push_back(p);
+    VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>::getInstance()->variable_pairs.push_back(p);
+    VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>::getInstance()->variable_pairs.push_back(p);
+    VonBertalanffyModel<TMB_FIMS_THIRD_ORDER>::getInstance()->variable_pairs.push_back(p);
 }
 
 /**
