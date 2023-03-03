@@ -60,7 +60,7 @@ vonB$log_l_inf_mean$estimable<- TRUE
 vonB$log_l_inf_sigma$value <- log(.1)
 
 
-for(i in 1:nfish) vonB$log_l_inf[[i]]$value<-0
+for(i in 1:nfish) vonB$log_l_inf[[i]]$value<-0.01
 vonB$a_min$value <- .001
 vonB$a_min$estimable <- FALSE
 #set data
@@ -87,8 +87,8 @@ vonB$log_l_inf[[5]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
 
 vonB$log_k[[1]]$estimable<-TRUE#$estimable<-FALSE
 vonB$log_k[[1]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
-vonB$log_k[[5]]$estimable<-TRUE#$estimable<-FALSE
-vonB$log_k[[5]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
+vonB$log_k[[6]]$estimable<-TRUE#$estimable<-FALSE
+vonB$log_k[[6]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
 #set up map
 for(i in 2:5){
     vonB$log_l_inf[[i]]$estimable<-FALSE
@@ -113,3 +113,6 @@ opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
 g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
 obj$report()
+
+vonB$finalize()
+vonB$show()
