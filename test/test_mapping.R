@@ -81,14 +81,14 @@ str(vonB)
 
 
 vonB$log_l_inf[[1]]$estimable<-TRUE
-vonB$log_l_inf[[1]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
-vonB$log_l_inf[[5]]$estimable<-TRUE#$estimable<-FALSE
+vonB$log_l_inf[[1]]$is_random_effect<-FALSE#$is_random_effect<-TRUE
+vonB$log_l_inf[[5]]$estimable<-FALSE#$estimable<-FALSE
 vonB$log_l_inf[[5]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
 
 vonB$log_k[[1]]$estimable<-TRUE#$estimable<-FALSE
-vonB$log_k[[1]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
+vonB$log_k[[1]]$is_random_effect<-FALSE#$is_random_effect<-TRUE
 vonB$log_k[[6]]$estimable<-TRUE#$estimable<-FALSE
-vonB$log_k[[6]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
+vonB$log_k[[6]]$is_random_effect<-FALSE#$is_random_effect<-TRUE
 #set up map
 for(i in 2:5){
     vonB$log_l_inf[[i]]$estimable<-FALSE

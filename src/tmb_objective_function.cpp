@@ -287,16 +287,20 @@ public:
         
                 Rcpp::NumericVector v = get_parameter_vector();
                 Rcpp::NumericVector r = get_random_effects_vector();
-                std::cout << "finalizing....\n";
+                Rcpp::Rcout << "finalizing...."<<std::endl;
                 VonBertalanffyModel<double>* model =
                         VonBertalanffyModel<double>::getInstance();
         
-                for (int i = 0; i < v.size(); i++) {
-                    (*model->parameters[i]) = v[i];
-                }
-                for (int i = 0; i < v.size(); i++) {
-                    (*model->random_effects[i]) = r[i];
-                }
+//                std::cout<<"parameters:\n";
+//                for (int i = 0; i < v.size(); i++) {
+//                    (*model->parameters[i]) = v[i];
+//                    std::cout<<v[i]<<"\n";
+//                }
+//                std::cout<<"random effects:\n";
+//                for (int i = 0; i < r.size(); i++) {
+//                    (*model->random_effects[i]) = r[i];
+//                    std::cout<<r[i]<<"\n";
+//                }
         
                 double f = model->evaluate();
         
