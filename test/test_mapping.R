@@ -39,15 +39,20 @@ data <- list(obs=obs$obs, fish=obs$fish, age=obs$age)
 m$clear();
 #create a von Bertalanffy object
 vonB <- new(m$vonBertalanffy, nfish)
-
+vonB$check_list()
 ## Global settings for all cases below
 #initialize k
 vonB$log_k_mean$value <- log(.5)
 vonB$log_k_mean$estimable <- TRUE
 vonB$log_k_sigma$value <- log(.1)
-
-
-
+for(i in 1:nfish) {
+    print(i)
+    vonB$log_l_inf[[i]]$value<-0
+    
+}
+vonB$check_list()
+#traceback()
+#q()
 
 ## initialize linf
 vonB$log_l_inf_mean$value <-log(10)
@@ -55,7 +60,7 @@ vonB$log_l_inf_mean$estimable<- TRUE
 vonB$log_l_inf_sigma$value <- log(.1)
 
 
-for(i in 1:nfish) vonB$log_l_inf[[i]]<-0
+for(i in 1:nfish) vonB$log_l_inf[[i]]$value<-0
 vonB$a_min$value <- .001
 vonB$a_min$estimable <- FALSE
 #set data
@@ -84,20 +89,19 @@ vonB$log_k[[1]]$estimable<-TRUE#$estimable<-FALSE
 vonB$log_k[[1]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
 vonB$log_k[[5]]$estimable<-TRUE#$estimable<-FALSE
 vonB$log_k[[5]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
-
-#set up mapping
+#set up map
 for(i in 2:5){
     vonB$log_l_inf[[i]]$estimable<-FALSE
+    m$map_to(vonB$log_l_inf[[i]], vonB$log_l_inf[[1]])
     vonB$log_k[[i]]$estimable<-FALSE
-    m$map_to(vonB$log_l_inf[[i]], vonB$log_l_inf[[0]])
-    m$map_to(vonB$log_k[[i]], vonB$log_k[[0]])
+    m$map_to(vonB$log_k[[i]], vonB$log_k[[1]])
 }
 
-for(i in 6:length(vonB$log_l_inf)){
+for(i in 7:length(vonB$log_l_inf)){
     vonB$log_l_inf[[i]]$estimable<-FALSE
+    m$map_to(vonB$log_l_inf[[i]], vonB$log_l_inf[[6]])
     vonB$log_k[[i]]$estimable<-FALSE
-    m$map_to(vonB$log_l_inf[[i]], vonB$log_l_inf[[5]])
-    m$map_to(vonB$log_k[[i]], vonB$log_k[[5]])
+    m$map_to(vonB$log_k[[i]], vonB$log_k[[6]])
 }
 
 
@@ -108,3 +112,4 @@ obj <- MakeADFun(data=list(), parameters, DLL="ModularTMBExample", silent=FALSE)
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
 g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
+obj$report()
