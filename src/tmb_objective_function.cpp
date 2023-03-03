@@ -27,6 +27,8 @@ Rcpp::NumericVector get_random_effects_vector();
  */
 class Variable {
 public:
+    static size_t id_g;
+    size_t id;
     static std::vector<Variable*> parameters;
     static std::vector<Variable*> estimated_parameters;
     bool estimable = false;
@@ -37,17 +39,14 @@ public:
     int random_parameter_index = -999;
 
     Variable() {
+        this->id = Variable::id_g++;
         Variable::parameters.push_back(this);
-    }
-
-    Variable(const Variable& other) :
-    estimable(other.estimable), is_random_effect(other.is_random_effect), value(other.value), parameter_index(other.parameter_index), variable_index(other.variable_index), random_parameter_index(other.random_parameter_index) {
     }
 
 
 
 };
-
+size_t Variable::id_g = 0;
 
 std::vector<Variable*> Variable::parameters;
 std::vector<Variable*> Variable::estimated_parameters;
@@ -151,10 +150,11 @@ public:
 
     static vonBertalanffyInterface* instance;
 
-    vonBertalanffyInterface(size_t nfish) {
-        this->log_k = Rcpp::List(nfish + 1);
-        this->log_l_inf = Rcpp::List(nfish + 1);
-        for (int i = 0; i <= nfish; i++) {
+    vonBertalanffyInterface(size_t nfish){
+        this->nfish = nfish;
+        this->log_k = Rcpp::List(nfish );
+        this->log_l_inf = Rcpp::List(nfish);
+        for (int i = 0; i < this->log_l_inf.size(); i++) {
             this->log_l_inf[i] = Variable();
             std::cout << "can access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
             this->log_k[i] = Variable();
@@ -163,9 +163,9 @@ public:
     }
 
     void check_list() {
-        for (int i = 0; i < nfish; i++) {
+      for (int i = 0; i < this->log_l_inf.size(); i++) {
 
-            std::cout <<i<< "can access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
+            std::cout <<1<< " can access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
          
         }
     }
@@ -216,36 +216,36 @@ public:
         model->variables.push_back(&model->log_l_inf_sigma);
         this->log_l_inf_sigma.variable_index = model->variables.size() - 1;
 
-        for (int i = 0; i < nfish; i++) {
-            std::cout << "can't access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << std::endl;
-//            model->log_l_inf[i] = (log_l_inf.value);
-//            model->variables.push_back(&model->log_l_inf[i]);
-//            log_l_inf.variable_index = model->variables.size() - 1;
-//
-//            if (log_l_inf.estimable) {
-//                if (log_l_inf.is_random_effect) {
-//                    model->random_effects.push_back(&model->log_l_inf[i]);
-//                    log_l_inf.random_parameter_index = model->random_effects.size() - 1;
-//                } else {
-//                    model->parameters.push_back(&model->log_l_inf[i]);
-//                    log_l_inf.parameter_index = model->parameters.size() - 1;
-//                }
-//            }
-//
-//            Variable log_k = Rcpp::as<Variable>(this->log_k[i]);
-//            model->log_k[i] = (log_k.value);
-//            model->variables.push_back(&model->log_k[i]);
-//            log_k.variable_index = model->variables.size() - 1;
-//
-//            if (log_k.estimable) {
-//                if (log_k.is_random_effect) {
-//                    model->random_effects.push_back(&model->log_k[i]);
-//                    log_k.random_parameter_index = model->random_effects.size() - 1;
-//                } else {
-//                    model->parameters.push_back(&model->log_k[i]);
-//                    log_k.parameter_index = model->parameters.size() - 1;
-//                }
-//            }
+        for (int i = 0; i < this->log_l_inf.size(); i++) {
+            Rcpp::Rcout<< "can't access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
+            model->log_l_inf[i] = (Rcpp::as<Variable>(this->log_l_inf[i]).value);
+            model->variables.push_back(&model->log_l_inf[i]);
+//            Rcpp::as<Variable>(this->log_l_inf[i]).variable_index = model->variables.size() - 1;
+
+            if (Rcpp::as<Variable>(this->log_l_inf[i]).estimable) {
+                if (Rcpp::as<Variable>(this->log_l_inf[i]).is_random_effect) {
+                    model->random_effects.push_back(&model->log_l_inf[i]);
+//                    Rcpp::as<Variable>(this->log_l_inf[i]).random_parameter_index = model->random_effects.size() - 1;
+                } else {
+                    model->parameters.push_back(&model->log_l_inf[i]);
+//                    Rcpp::as<Variable>(this->log_l_inf[i]).parameter_index = model->parameters.size() - 1;
+                }
+            }
+
+     
+            model->log_k[i] = Rcpp::as<Variable>(this->log_k[i]).value;
+            model->variables.push_back(&model->log_k[i]);
+//            Rcpp::as<Variable>(this->log_k[i]).variable_index = model->variables.size() - 1;
+
+            if (Rcpp::as<Variable>(this->log_k[i]).estimable) {
+                if (Rcpp::as<Variable>(this->log_k[i]).is_random_effect) {
+                    model->random_effects.push_back(&model->log_k[i]);
+//                    Rcpp::as<Variable>(this->log_k[i]).random_parameter_index = model->random_effects.size() - 1;
+                } else {
+                    model->parameters.push_back(&model->log_k[i]);
+//                    Rcpp::as<Variable>(this->log_k[i]).parameter_index = model->parameters.size() - 1;
+                }
+            }
         }
 
 
@@ -278,6 +278,7 @@ public:
      * Prepares the model to work with TMB.
      */
     void prepare() {
+        this->check_list();
         prepare_template<TMB_FIMS_REAL_TYPE>();
         prepare_template<TMB_FIMS_FIRST_ORDER>();
         prepare_template<TMB_FIMS_SECOND_ORDER>();
