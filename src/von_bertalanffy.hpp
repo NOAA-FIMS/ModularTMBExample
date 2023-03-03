@@ -20,7 +20,8 @@ public:
     std::vector<int> fish;
     std::vector<Type*> parameters;
      std::vector<Type*> variables;
-    std::vector<std::pair<int, int > > variable_map;
+     std::map<size_t, Type*> variable_map;
+    std::vector<std::pair<size_t, size_t > > variable_pairs;
     std::vector<Type*> random_effects;
     int nfish;
     Type log_k_mean;

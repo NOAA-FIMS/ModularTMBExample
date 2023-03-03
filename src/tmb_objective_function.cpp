@@ -150,9 +150,9 @@ public:
 
     static vonBertalanffyInterface* instance;
 
-    vonBertalanffyInterface(size_t nfish){
+    vonBertalanffyInterface(size_t nfish) {
         this->nfish = nfish;
-        this->log_k = Rcpp::List(nfish );
+        this->log_k = Rcpp::List(nfish);
         this->log_l_inf = Rcpp::List(nfish);
         for (int i = 0; i < this->log_l_inf.size(); i++) {
             this->log_l_inf[i] = Variable();
@@ -163,10 +163,10 @@ public:
     }
 
     void check_list() {
-      for (int i = 0; i < this->log_l_inf.size(); i++) {
+        for (int i = 0; i < this->log_l_inf.size(); i++) {
 
-            std::cout <<1<< " can access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
-         
+            std::cout << 1 << " can access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
+
         }
     }
 
@@ -198,52 +198,46 @@ public:
 
         //initialize a_min
         model->a_min = this->a_min.value;
+        model->variable_map[this->a_min.id] = &model->a_min;
 
         //initialize k
         model->log_k_mean = this->log_k_mean.value;
-        model->variables.push_back(&model->log_k_mean);
-        this->log_k_mean.variable_index = model->variables.size() - 1;
+        model->variable_map[this->log_k_mean.id] = &model->log_k_mean;
 
         model->log_k_sigma = this->log_k_sigma.value;
-        model->variables.push_back(&model->log_k_sigma);
-        this->log_k_sigma.variable_index = model->variables.size() - 1;
+        model->variable_map[this->log_k_sigma.id] = &model->log_k_sigma;
+
         //initialize l_inf
         model->log_l_inf_mean = this->log_l_inf_mean.value;
-        model->variables.push_back(&model->log_l_inf_mean);
-        this->log_l_inf_mean.variable_index = model->variables.size() - 1;
+        model->variable_map[this->log_l_inf_mean.id] = &model->log_l_inf_mean;
 
         model->log_l_inf_sigma = this->log_l_inf_sigma.value;
-        model->variables.push_back(&model->log_l_inf_sigma);
-        this->log_l_inf_sigma.variable_index = model->variables.size() - 1;
+        model->variable_map[this->log_l_inf_sigma.id] = &model->log_l_inf_sigma;
+
 
         for (int i = 0; i < this->log_l_inf.size(); i++) {
-            Rcpp::Rcout<< "can't access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
+            Rcpp::Rcout << "can't access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
             model->log_l_inf[i] = (Rcpp::as<Variable>(this->log_l_inf[i]).value);
-            model->variables.push_back(&model->log_l_inf[i]);
-//            Rcpp::as<Variable>(this->log_l_inf[i]).variable_index = model->variables.size() - 1;
+            model->variable_map[Rcpp::as<Variable>(this->log_l_inf[i]).id] = &model->log_l_inf[i];
 
             if (Rcpp::as<Variable>(this->log_l_inf[i]).estimable) {
                 if (Rcpp::as<Variable>(this->log_l_inf[i]).is_random_effect) {
                     model->random_effects.push_back(&model->log_l_inf[i]);
-//                    Rcpp::as<Variable>(this->log_l_inf[i]).random_parameter_index = model->random_effects.size() - 1;
+                    //                    Rcpp::as<Variable>(this->log_l_inf[i]).random_parameter_index = model->random_effects.size() - 1;
                 } else {
                     model->parameters.push_back(&model->log_l_inf[i]);
-//                    Rcpp::as<Variable>(this->log_l_inf[i]).parameter_index = model->parameters.size() - 1;
+                    //                    Rcpp::as<Variable>(this->log_l_inf[i]).parameter_index = model->parameters.size() - 1;
                 }
             }
 
-     
-            model->log_k[i] = Rcpp::as<Variable>(this->log_k[i]).value;
-            model->variables.push_back(&model->log_k[i]);
-//            Rcpp::as<Variable>(this->log_k[i]).variable_index = model->variables.size() - 1;
-
+             model->variable_map[Rcpp::as<Variable>(this->log_k[i]).id] = &model->log_k[i];
             if (Rcpp::as<Variable>(this->log_k[i]).estimable) {
                 if (Rcpp::as<Variable>(this->log_k[i]).is_random_effect) {
                     model->random_effects.push_back(&model->log_k[i]);
-//                    Rcpp::as<Variable>(this->log_k[i]).random_parameter_index = model->random_effects.size() - 1;
+                    //                    Rcpp::as<Variable>(this->log_k[i]).random_parameter_index = model->random_effects.size() - 1;
                 } else {
                     model->parameters.push_back(&model->log_k[i]);
-//                    Rcpp::as<Variable>(this->log_k[i]).parameter_index = model->parameters.size() - 1;
+                    //                    Rcpp::as<Variable>(this->log_k[i]).parameter_index = model->parameters.size() - 1;
                 }
             }
         }
@@ -363,22 +357,22 @@ public:
 vonBertalanffyInterface* vonBertalanffyInterface::instance = NULL;
 
 void MapTo(const Variable& a, const Variable& b) {
-
-    if (a.variable_index == -999) {
-        Rcout << "error: variable \"a\" not on variable list\n";
-    }
-
-    if (b.variable_index == -999) {
-        Rcout << "error: variable \"b\" not on variable list\n";
-    }
-
-    std::pair<int, int> p;
-    p.first = a.variable_index;
-    p.second = b.variable_index;
-    VonBertalanffyModel<TMB_FIMS_REAL_TYPE>::getInstance()->variable_map.push_back(p);
-    VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>::getInstance()->variable_map.push_back(p);
-    VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>::getInstance()->variable_map.push_back(p);
-    VonBertalanffyModel<TMB_FIMS_THIRD_ORDER>::getInstance()->variable_map.push_back(p);
+//
+//    if (a.variable_index == -999) {
+//        Rcout << "error: variable \"a\" not on variable list\n";
+//    }
+//
+//    if (b.variable_index == -999) {
+//        Rcout << "error: variable \"b\" not on variable list\n";
+//    }
+//
+//    std::pair<size_t, size_t> p;
+//    p.first = a.id;
+//    p.second = b.id;
+//    VonBertalanffyModel<TMB_FIMS_REAL_TYPE>::getInstance()->variable_pairs.push_back(p);
+//    VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>::getInstance()->variable_pairs.push_back(p);
+//    VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>::getInstance()->variable_pairs.push_back(p);
+//    VonBertalanffyModel<TMB_FIMS_THIRD_ORDER>::getInstance()->variable_pairs.push_back(p);
 }
 
 /**
@@ -472,7 +466,7 @@ RCPP_MODULE(growth) {
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
             .constructor<size_t>()
             .method("prepare", &vonBertalanffyInterface::prepare)
-             .method("check_list", &vonBertalanffyInterface::check_list)
+            .method("check_list", &vonBertalanffyInterface::check_list)
             .method("finalize", &vonBertalanffyInterface::finalize)
             .method("show", &vonBertalanffyInterface::show_)
             .field("log_k_mean", &vonBertalanffyInterface::log_k_mean)
@@ -530,8 +524,8 @@ Type objective_function<Type>::operator()() {
         *model->random_effects[i] = r[i];
     }
     //update mapped variable
-    for (int i = 0; i < model->variable_map.size(); i++) {
-        *model->variables[model->variable_map[i].first] = *model->variables[model->variable_map[i].second];
+    for (int i = 0; i < model->variable_pairs.size(); i++) {
+        *model->variable_map[model->variable_pairs[i].first] = *model->variable_map[model->variable_pairs[i].second];
     }
 
     //evaluate the model objective function value
