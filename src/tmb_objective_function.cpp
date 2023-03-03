@@ -35,7 +35,6 @@ public:
     bool is_random_effect = false;
     double value = 0;
 
-
     Variable() {
         this->id = Variable::id_g++;
         Variable::parameters.push_back(this);
@@ -65,7 +64,7 @@ public:
     //    Variable log_k;
     Variable log_k_sigma;
     Variable log_k_mean;
-
+    double objective_function_value;
 
     bool log_l_inf_is_estimated = true;
     bool log_l_inf_is_random_effect = true;
@@ -152,7 +151,7 @@ public:
                 }
             }
 
-             model->variable_map[Rcpp::as<Variable>(this->log_k[i]).id] = &model->log_k[i];
+            model->variable_map[Rcpp::as<Variable>(this->log_k[i]).id] = &model->log_k[i];
             if (Rcpp::as<Variable>(this->log_k[i]).estimable) {
                 if (Rcpp::as<Variable>(this->log_k[i]).is_random_effect) {
                     model->random_effects.push_back(&model->log_k[i]);
@@ -201,55 +200,42 @@ public:
      * portable model once and transfers values back to the Rcpp interface.
      */
     void finalize() {
-        
-                Rcpp::NumericVector v = get_parameter_vector();
-                Rcpp::NumericVector r = get_random_effects_vector();
-                Rcpp::Rcout << "finalizing...."<<std::endl;
-                VonBertalanffyModel<double>* model =
-                        VonBertalanffyModel<double>::getInstance();
-        
-//                std::cout<<"parameters:\n";
-//                for (int i = 0; i < v.size(); i++) {
-//                    (*model->parameters[i]) = v[i];
-//                    std::cout<<v[i]<<"\n";
-//                }
-//                std::cout<<"random effects:\n";
-//                for (int i = 0; i < r.size(); i++) {
-//                    (*model->random_effects[i]) = r[i];
-//                    std::cout<<r[i]<<"\n";
-//                }
-        
-                double f = model->evaluate();
-        
-        
-        
-                this->log_k_mean.value = model->log_k_mean;
-                this->log_k_sigma.value = model->log_k_sigma;
-                // for(int i=0; i<nfish;i++){
-                //   this->log_k[i] = model->log_k[i];
-                //   this->log_l_inf[i] = model->log_l_inf[i];
-                // }
-                this->log_l_inf_mean.value = model->log_l_inf_mean;
-                this->log_l_inf_sigma.value = model->log_l_inf_sigma;
-                this->a_min.value = model->a_min;
-                this->predicted = Rcpp::NumericVector(model->predicted.size());
-                for (int i = 0; i < this->log_k.size(); i++) {
-                    Variable v;
-                    v.value =model->log_k[i];
-                    v.id = Rcpp::as<Variable>(this->log_k[i]).id;
-                    this->log_k[i] = v;
-                    Variable v1;
-                    v1.value =model->log_l_inf[i];
-                    v1.id = Rcpp::as<Variable>(this->log_l_inf[i]).id;
-                    this->log_l_inf[i] = v1;
-                    
-//                    Rcpp::as<Variable>(this->log_k[i]).value = model->log_k[i];
-//                    Rcpp::as<Variable>(this->log_l_inf[i]).value = model->log_l_inf[i];
-                }
-        
-                for (int i = 0; i < model->predicted.size(); i++) {
-                    this->predicted[i] = model->predicted[i];
-                }
+
+        Rcpp::NumericVector v = get_parameter_vector();
+        Rcpp::NumericVector r = get_random_effects_vector();
+        Rcpp::Rcout << "finalizing...." << std::endl;
+        VonBertalanffyModel<double>* model =
+                VonBertalanffyModel<double>::getInstance();
+
+
+        objective_function_value = model->evaluate();
+
+
+
+        this->log_k_mean.value = model->log_k_mean;
+        this->log_k_sigma.value = model->log_k_sigma;
+
+        this->log_l_inf_mean.value = model->log_l_inf_mean;
+        this->log_l_inf_sigma.value = model->log_l_inf_sigma;
+        this->a_min.value = model->a_min;
+        this->predicted = Rcpp::NumericVector(model->predicted.size());
+        for (int i = 0; i < this->log_k.size(); i++) {
+            Variable v;
+            v.value = model->log_k[i];
+            v.id = Rcpp::as<Variable>(this->log_k[i]).id;
+            this->log_k[i] = v;
+            Variable v1;
+            v1.value = model->log_l_inf[i];
+            v1.id = Rcpp::as<Variable>(this->log_l_inf[i]).id;
+            this->log_l_inf[i] = v1;
+
+            //                    Rcpp::as<Variable>(this->log_k[i]).value = model->log_k[i];
+            //                    Rcpp::as<Variable>(this->log_l_inf[i]).value = model->log_l_inf[i];
+        }
+
+        for (int i = 0; i < model->predicted.size(); i++) {
+            this->predicted[i] = model->predicted[i];
+        }
 
     }
 
@@ -268,27 +254,27 @@ public:
 
 
         Rcout << "vonBertalanffy:\n";
-        
-        
-        
-                Rcout << std::setw(15) << "observed  " << std::setw(15) << "predicted\n";
-                for (int i = 0; i < this->predicted.size(); i++) {
-                    Rcout << std::setw(15) << this->obs[i] << std::setw(15) << this->predicted[i] << "\n";
-                }
-                Rcout << "k = " << exp(this->log_k_mean.value) << "\n";
-                Rcout << "a_min = " << this->a_min.value << "\n";
-                Rcout << "l_inf = " << exp(this->log_l_inf_mean.value) << "\n";
-                Rcout << std::setw(15) << "log_k  " << std::setw(15) << "log_l_inf\n";
-                for (int i = 0; i < this->log_k.size(); i++) {
-                    Rcout << std::setw(15) << Rcpp::as<Variable>(this->log_k[i]).value << std::setw(15) << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
-                }
+
+        Rcout << "function value: " << this->objective_function_value << "\n";
+
+        Rcout << std::setw(15) << "observed  " << std::setw(15) << "predicted\n";
+        for (int i = 0; i < this->predicted.size(); i++) {
+            Rcout << std::setw(15) << this->obs[i] << std::setw(15) << this->predicted[i] << "\n";
+        }
+        Rcout << "k = " << exp(this->log_k_mean.value) << "\n";
+        Rcout << "a_min = " << this->a_min.value << "\n";
+        Rcout << "l_inf = " << exp(this->log_l_inf_mean.value) << "\n";
+        Rcout << std::setw(15) << "log_k  " << std::setw(15) << "log_l_inf\n";
+        for (int i = 0; i < this->log_k.size(); i++) {
+            Rcout << std::setw(15) << Rcpp::as<Variable>(this->log_k[i]).value << std::setw(15) << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
+        }
     }
 };
 vonBertalanffyInterface* vonBertalanffyInterface::instance = NULL;
 
 void MapTo(const Variable& a, const Variable& b) {
 
-  
+
 
     std::pair<size_t, size_t> p;
     p.first = a.id;

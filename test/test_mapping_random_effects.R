@@ -122,4 +122,5 @@ obj$report()
 
 vonB$finalize()
 vonB$show()
+m$get_parameter_vector()
 m$get_random_effects_vector()
