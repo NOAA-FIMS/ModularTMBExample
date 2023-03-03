@@ -241,7 +241,7 @@ public:
                     Variable v1;
                     v1.value =model->log_k[i];
                     v1.id = Rcpp::as<Variable>(this->log_k[i]).id;
-                    this->log_k[i] = v1;
+                    this->log_l_inf[i] = v1;
                     
 //                    Rcpp::as<Variable>(this->log_k[i]).value = model->log_k[i];
 //                    Rcpp::as<Variable>(this->log_l_inf[i]).value = model->log_l_inf[i];
