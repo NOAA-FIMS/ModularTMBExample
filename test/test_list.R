@@ -6,18 +6,18 @@ library(TMB)
 ##library(Rcpp)
 ##library(ModularTMBExample)
 library(dplyr)
-##library(ggplot2)
+library(ggplot2)
 ##library(tmbstan)
 ##library(shinystan)
-#theme_set(theme_bw())
+theme_set(theme_bw())
 devtools::load_all("C:/Users/chris/noaa-git/ModularTMBExample")
 ## simulate data, repeated measures for each fish so can use
 ## random effects
 set.seed(2342)
 obs <- simulate_data()
-#g <- ggplot(obs, aes(age, length)) + geom_line() +
-#  geom_point(mapping=aes(y=obs), col=2) +
-#  facet_wrap('fish')
+g <- ggplot(obs, aes(age, length)) + geom_line() +
+  geom_point(mapping=aes(y=obs), col=2) +
+  facet_wrap('fish')
 
 
 
@@ -76,7 +76,7 @@ names(obj$par) <- order_names(m$get_parameter_map()$fixed)
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
  sdreport(obj)
-##g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
+g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
 ## fit <- tmbstan(obj, init='last.par.best', chains=1)
 ## launch_shinystan(fit)
 
@@ -97,7 +97,7 @@ names(obj$par) <- order_names(m$get_parameter_map()$fixed)
 opt <- with(obj, nlminb(par, fn, gr))
 sdreport(obj)
 obs$pred <- obj$report()$pred
-#g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
+g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
 
 ## Turn on marginal ML estimation of Linf vector (but not k)
 m$clear()
@@ -113,7 +113,7 @@ names(obj$env$par) <- c(name_list$fixed, name_list$random)
 names(obj$par) <- order_names(m$get_parameter_map()$fixed)
 opt <- with(obj, nlminb(par, fn, gr))
 obs$pred <- obj$report()$pred
-#g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
+g+ geom_line(data=obs, mapping=aes(y=pred), col=4)
 sdreport(obj)
 
 ## Full RE estimation of both vectors
