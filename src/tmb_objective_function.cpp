@@ -156,7 +156,6 @@ public:
         this->log_l_inf = Rcpp::List(nfish);
         for (int i = 0; i < this->log_l_inf.size(); i++) {
             this->log_l_inf[i] = Variable();
-            std::cout << "can access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
             this->log_k[i] = Variable();
         }
 
@@ -165,7 +164,6 @@ public:
     void check_list() {
         for (int i = 0; i < this->log_l_inf.size(); i++) {
 
-            std::cout << 1 << " can access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
 
         }
     }
