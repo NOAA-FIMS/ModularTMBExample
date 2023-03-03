@@ -60,7 +60,7 @@ vonB$log_l_inf_mean$estimable<- TRUE
 vonB$log_l_inf_sigma$value <- log(.1)
 
 
-for(i in 1:nfish) vonB$log_l_inf[[i]]$value<-0.01
+#for(i in 1:nfish) vonB$log_l_inf[[i]]$value<-0.01
 vonB$a_min$value <- .001
 vonB$a_min$estimable <- FALSE
 #set data
@@ -80,10 +80,12 @@ str(vonB)
 
 
 
+vonB$log_l_inf[[1]]$value<-10
 vonB$log_l_inf[[1]]$estimable<-TRUE
 vonB$log_l_inf[[1]]$is_random_effect<-FALSE#$is_random_effect<-TRUE
-vonB$log_l_inf[[5]]$estimable<-FALSE#$estimable<-FALSE
-vonB$log_l_inf[[5]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
+vonB$log_l_inf[[6]]$value<-0.1
+vonB$log_l_inf[[6]]$estimable<-TRUE#$estimable<-FALSE
+vonB$log_l_inf[[6]]$is_random_effect<-TRUE#$is_random_effect<-TRUE
 
 vonB$log_k[[1]]$estimable<-TRUE#$estimable<-FALSE
 vonB$log_k[[1]]$is_random_effect<-FALSE#$is_random_effect<-TRUE
@@ -93,13 +95,15 @@ vonB$log_k[[6]]$is_random_effect<-FALSE#$is_random_effect<-TRUE
 for(i in 2:5){
     vonB$log_l_inf[[i]]$estimable<-FALSE
     m$map_to(vonB$log_l_inf[[i]], vonB$log_l_inf[[1]])
+    
     vonB$log_k[[i]]$estimable<-FALSE
     m$map_to(vonB$log_k[[i]], vonB$log_k[[1]])
 }
 
-for(i in 7:length(vonB$log_l_inf)){
+for(i in 7:nfish){
     vonB$log_l_inf[[i]]$estimable<-FALSE
     m$map_to(vonB$log_l_inf[[i]], vonB$log_l_inf[[6]])
+    
     vonB$log_k[[i]]$estimable<-FALSE
     m$map_to(vonB$log_k[[i]], vonB$log_k[[6]])
 }
