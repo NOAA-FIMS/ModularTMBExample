@@ -34,9 +34,7 @@ public:
     bool estimable = false;
     bool is_random_effect = false;
     double value = 0;
-    int parameter_index = -999;
-    int variable_index = -999;
-    int random_parameter_index = -999;
+
 
     Variable() {
         this->id = Variable::id_g++;
@@ -50,80 +48,6 @@ size_t Variable::id_g = 0;
 
 std::vector<Variable*> Variable::parameters;
 std::vector<Variable*> Variable::estimated_parameters;
-
-class VariableVector {
-    std::vector<Variable> x;
-public:
-
-    VariableVector() {
-    }
-
-    VariableVector(size_t size) {
-        x.resize(size);
-    }
-
-    void resize(size_t size) {
-        std::cout << "resizing to " << size << std::endl;
-        x.resize(size);
-        std::cout << x.size() << std::endl;
-    }
-
-    Variable& at(size_t index) {
-        std::cout << "variable at index " << index << " = " << x[index].value << "\n";
-        return x[index];
-    }
-
-    Variable& operator[](size_t index) {
-        return x[index];
-    }
-
-    void set(size_t index, double v) {
-        if (index >= x.size()) {
-            Rcout << "index out of bounds: " << index << " < " << x.size() - 1 << "\n";
-            return;
-        }
-        x[index].value = v;
-        std::cout << "variable at index " << index << " = " << x[index].value << "\n";
-    }
-
-    void estimated(size_t index, bool v) {
-        this->x[index].estimable = true;
-        std::cout << "estimable at index " << index << "   " << this->x[index].estimable << "\n";
-    }
-
-    bool is_estimated(size_t index) {
-        std::cout << this->x[index].estimable << "\n";
-        return this->x[index].estimable;
-    }
-
-    void random_effect(size_t index, bool v) {
-        std::cout << "random effect " << v << "\n";
-        this->x[index].is_random_effect = v;
-    }
-
-    bool is_random_effect(size_t index) {
-        return this->x[index].is_random_effect;
-    }
-
-    size_t size() {
-        return x.size();
-    }
-
-    int get_parameter_index(size_t index) {
-        return x[index].parameter_index;
-    }
-
-    size_t get_random_parameter_index(size_t index) {
-        return x[index].random_parameter_index;
-    }
-
-    void show() {
-        for (int i = 0; i < x.size(); i++) {
-            std::cout << x[i].value << " ";
-        }
-        std::cout << std::endl;
-    }
-};
 
 class vonBertalanffyInterface {
 public:
@@ -243,24 +167,19 @@ public:
 
         if (this->log_k_mean.estimable) {
             model->parameters.push_back(&model->log_k_mean);
-            this->log_k_mean.parameter_index = model->parameters.size() - 1;
         }
         if (this->log_k_sigma.estimable) {
             model->parameters.push_back(&model->log_k_sigma);
-            this->log_k_sigma.parameter_index = model->parameters.size() - 1;
         }
         if (this->log_l_inf_mean.estimable) {
             model->parameters.push_back(&model->log_l_inf_mean);
-            this->log_l_inf_mean.parameter_index = model->parameters.size() - 1;
         }
         if (this->log_l_inf_sigma.estimable) {
             model->parameters.push_back(&model->log_l_inf_sigma);
-            this->log_l_inf_sigma.parameter_index = model->parameters.size() - 1;
         }
 
         if (this->a_min.estimable) {
             model->parameters.push_back(&model->a_min);
-            this->a_min.parameter_index = model->parameters.size() - 1;
         }
 
 
@@ -369,13 +288,7 @@ vonBertalanffyInterface* vonBertalanffyInterface::instance = NULL;
 
 void MapTo(const Variable& a, const Variable& b) {
 
-    if (a.variable_index == -999) {
-        Rcout << "error: variable \"a\" not on variable list\n";
-    }
-
-    if (b.variable_index == -999) {
-        Rcout << "error: variable \"b\" not on variable list\n";
-    }
+  
 
     std::pair<size_t, size_t> p;
     p.first = a.id;
@@ -459,21 +372,7 @@ RCPP_MODULE(growth) {
             .constructor()
             .field("value", &Variable::value)
             .field("estimable", &Variable::estimable)
-            .field("is_random_effect", &Variable::is_random_effect)
-            .field("parameter_index", &Variable::parameter_index)
-            .field("random_parameter_index", &Variable::random_parameter_index);
-    Rcpp::class_<VariableVector > ("VariableVector")
-            .constructor()
-            .constructor<size_t>()
-            .method("at", &VariableVector::at)
-            .method("set", &VariableVector::set)
-            .method("size", &VariableVector::size)
-            .method("resize", &VariableVector::resize)
-            .method("show", &VariableVector::show)
-            .method("estimated", &VariableVector::estimated)
-            .method("is_estimated", &VariableVector::is_estimated)
-            .method("random_effect", &VariableVector::random_effect)
-            .method("is_random_effect", &VariableVector::is_random_effect);
+            .field("is_random_effect", &Variable::is_random_effect);
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
             .constructor<size_t>()
             .method("prepare", &vonBertalanffyInterface::prepare)
