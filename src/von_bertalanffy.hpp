@@ -9,52 +9,76 @@
  * modeling platforms.
  */
 template<typename Type>
-class VonBertalanffyModel{
+class VonBertalanffyModel {
 public:
-  //using traits for modeling platform specific structures
-  typename model_traits<Type>::data_vector data;
-  std::vector<Type> predicted;
-  std::vector<double> ages;
-  std::vector<Type*> parameters;
-  Type k;
-  Type l_inf;
-  Type a_min;
-  Type alpha;
-  Type beta;
-  //singleton instance based on Type
-  static VonBertalanffyModel<Type>* instance;
-  
-  /**
-   * Returns the sigleton instance of VonBertalanffyModel
-   * of type Type.
-   */
-  static VonBertalanffyModel<Type>* getInstance(){
-    return VonBertalanffyModel<Type>::instance;
-  }
-  
-  /**
-   * Objective function to compute least squares
-   * of observed and predicted length.
-   */
-  Type evaluate(){
-    if(this->predicted.size()==0){
-      this->predicted.resize(ages.size());
+    //using traits for modeling platform specific structures
+    typename model_traits<Type>::data_vector obs;
+    std::vector<Type> predicted;
+    std::vector<Type> linf;
+    std::vector<Type> k;
+    std::vector<double> ages;
+    std::vector<int> fish;
+    std::vector<Type*> parameters;
+     std::vector<Type*> variables;
+     std::map<size_t, Type*> variable_map;
+    std::vector<std::pair<size_t, size_t > > variable_pairs;
+    std::vector<Type*> random_effects;
+    int nfish;
+    Type log_k_mean;
+    Type log_l_inf_mean;
+    Type log_k_sigma;
+    Type log_l_inf_sigma;
+    Type a_min;
+
+    typename model_traits<Type>::parameter_vector log_k;
+    typename model_traits<Type>::parameter_vector log_l_inf;
+
+
+    //singleton instance based on Type
+    static VonBertalanffyModel<Type>* instance;
+
+    /**
+     * Returns the sigleton instance of VonBertalanffyModel
+     * of type Type.
+     */
+    static VonBertalanffyModel<Type>* getInstance() {
+        return VonBertalanffyModel<Type>::instance;
     }
-    Type norm2 = 0.0;
-    for(int i =0; i < ages.size(); i++){
-        Type temp = this->l_inf * (1.0 - exp(-k * (ages[i] - this->a_min)));
-        this->predicted[i] = temp;
-        norm2+=(temp-data[i])*(temp-data[i]);
+
+    /**
+     * Objective function to compute least squares
+     * of observed and predicted length.
+     */
+    Type evaluate() {
+        if (this->predicted.size() == 0) {
+            this->predicted.resize(ages.size());
+        }
+
+        this->linf.resize(ages.size());
+        this->k.resize(ages.size());
+        this->fish.resize(ages.size());
+        Type norm2 = 0.0;
+        for (int i = 0; i < obs.size(); i++) {
+            this->linf[i] = exp(this->log_l_inf_mean + this->log_l_inf[this->fish[i]]);
+            this->k[i] = exp(this->log_k_mean + this->log_k[this->fish[i]]);
+            Type temp = this->linf[i]*(1.0 - exp(-this->k[i]*(ages[i] - this->a_min)));
+            this->predicted[i] = temp;
+            norm2 -= dnorm(temp, obs[i], Type(0.1), true);
+        }
+        // probability of the random effects
+        for (int i = 0; i < nfish; i++) {
+            norm2 -= dnorm(log_l_inf[i], Type(0.0), exp(log_l_inf_sigma), true);
+            norm2 -= dnorm(log_k[i], Type(0.0), exp(log_k_sigma), true);
+        }
+        return norm2;
     }
-    return norm2;
-  }
-  
-  /**
-   * clears the estimated parameter list
-   */
-  void clear(){
-    this->parameters.clear();
-  }
+
+    /**
+     * clears the estimated parameter list
+     */
+    void clear() {
+        this->parameters.clear();
+    }
 };
 
 template<class Type>
