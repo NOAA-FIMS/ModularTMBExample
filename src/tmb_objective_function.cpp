@@ -11,6 +11,7 @@
 
 #define RCPP_NO_SUGAR
 #include <Rcpp.h>
+#include <sstream>
 
 #define TMB_FIMS_REAL_TYPE double
 #define TMB_FIMS_FIRST_ORDER AD<TMB_FIMS_REAL_TYPE >
@@ -48,8 +49,45 @@ size_t Variable::id_g = 0;
 std::vector<Variable*> Variable::parameters;
 std::vector<Variable*> Variable::estimated_parameters;
 
+static void Tokenize(const std::string& str, std::vector<std::string>& tokens,
+        const std::string& delimiters = " ", const bool trimEmpty = true) {
+    std::string::size_type pos, lastPos = 0;
+    while (true) {
+        pos = str.find_first_of(delimiters, lastPos);
+        if (pos == std::string::npos) {
+            pos = str.size();
+
+            if (pos != lastPos || !trimEmpty)
+                tokens.push_back(std::vector<std::string>::value_type(str.data() + lastPos,
+                    (std::vector<std::string>::value_type::size_type)pos - lastPos));
+
+            break;
+        } else {
+            if (pos != lastPos || !trimEmpty)
+                tokens.push_back(std::vector<std::string>::value_type(str.data() + lastPos,
+                    (std::vector<std::string>::value_type::size_type)pos - lastPos));
+        }
+
+        lastPos = pos + 1;
+    }
+}
+
+template <typename T>
+T StringToNumber(const std::string &Text) {
+    std::istringstream ss(Text);
+    T result;
+    return (ss >> result) ? result : 0;
+}
+
+bool StartsWith(const std::string &value1, const std::string &value2) {
+    return value1.find(value2) == 0;
+}
+
 class vonBertalanffyInterface {
 public:
+    static size_t id_g;
+    size_t id = 0;
+    std::string name;
     Rcpp::NumericVector obs;
     Rcpp::NumericVector ages;
     Rcpp::NumericVector predicted;
@@ -82,6 +120,7 @@ public:
             this->log_k[i] = Variable();
         }
 
+        id = vonBertalanffyInterface::id_g++;
     }
 
     void check_list() {
@@ -91,9 +130,58 @@ public:
         }
     }
 
+    void SetName() {
+
+        Rcpp::Environment env = Rcpp::Environment::global_env();
+        Rcpp::List l = Rcpp::as<Rcpp::List>(env.ls(true));
+        SEXP e, E, EE;
+
+
+        for (int i = 0; i < l.size(); i++) {
+            std::string code = "capture.output(show(vonB))"; // R code to evaluate
+            std::stringstream ss;
+            ss << "capture.output(show(" << Rcpp::as<std::string>(l[i]) << "))"; //, file = NULL, append = FALSE, type = c(\"output\", \"message\"), split = FALSE)";
+            if (StartsWith(Rcpp::as<std::string>(l[i]), ".")) {
+                continue;
+            }
+            SEXP expression, result;
+            ParseStatus status;
+
+            PROTECT(expression = R_ParseVector(Rf_mkString(ss.str().c_str()), 1, &status, R_NilValue));
+
+            if (status != PARSE_OK) {
+                std::cout << "Error parsing expression" << std::endl;
+                UNPROTECT(1);
+            }
+
+            PROTECT(result = Rf_eval(VECTOR_ELT(expression, 0), R_GlobalEnv));
+
+            if (TYPEOF(result) == STRSXP) {
+                for (int j = 0; j < LENGTH(result); j++) {
+                    std::string str(CHAR(STRING_ELT(result, j)));
+                    if (str == "vonBertalanffy") {
+
+                        std::string line(CHAR(STRING_ELT(result, j + 1)));
+                        std::vector<std::string> tokens;
+                        Tokenize(line, tokens, ":");
+                        if (StringToNumber<size_t> (tokens[1]) == this->id) {
+                            this->name = Rcpp::as<std::string>(l[i]);
+                        }
+                    } else {
+                        break;
+                    }
+                    std::cout << CHAR(STRING_ELT(result, j)) << std::endl;
+                }
+            }
+        }
+        UNPROTECT(2);
+
+
+
+    }
+
     template<class Type>
     void prepare_template() {
-
 
 
         if (this->obs.size() != this->ages.size()) {
@@ -137,7 +225,6 @@ public:
 
 
         for (int i = 0; i < this->log_l_inf.size(); i++) {
-            Rcpp::Rcout << "can't access here: " << Rcpp::as<Variable>(this->log_l_inf[i]).value << "\n";
             model->log_l_inf[i] = (Rcpp::as<Variable>(this->log_l_inf[i]).value);
             model->variable_map[Rcpp::as<Variable>(this->log_l_inf[i]).id] = &model->log_l_inf[i];
 
@@ -151,6 +238,9 @@ public:
                 }
             }
 
+        }
+
+        for (int i = 0; i < this->log_l_inf.size(); i++) {
             model->variable_map[Rcpp::as<Variable>(this->log_k[i]).id] = &model->log_k[i];
             if (Rcpp::as<Variable>(this->log_k[i]).estimable) {
                 if (Rcpp::as<Variable>(this->log_k[i]).is_random_effect) {
@@ -161,6 +251,8 @@ public:
                     //                    Rcpp::as<Variable>(this->log_k[i]).parameter_index = model->parameters.size() - 1;
                 }
             }
+
+
         }
 
 
@@ -182,13 +274,32 @@ public:
         }
 
 
+        //
+        //        Rcpp::Environment env = Rcpp::Environment::global_env();
+        //        Rcpp::List l = Rcpp::as<Rcpp::List>(env.ls(true));
+        //
+        //        for (int i = 0; i < l.size(); i++) {
+        //            Rcpp::Vector<19, Rcpp::PreserveStorage>* V = l[i].parent;
+        //            std::cout << "Rcpp::PreserveStorage:\n";
+        //            std::cout << Rcpp::as<std::string>(l[i]) << "\n";
+        //            for (int j = 0; j < V->size(); j++) {
+        //                std::cout << "     " << V[j].get__() << "  " << Rcpp::wrap(*this) << "\n";
+        //            }
+        //
+        //        }
+        //        exit(0);
+
+
+
+        //        std::cout << Rf_type2char(Rcpp::as<SEXPTYPE>(*this)) << "\n";
     }
 
     /**
      * Prepares the model to work with TMB.
      */
     void prepare() {
-        this->check_list();
+
+        this->SetName();
         prepare_template<TMB_FIMS_REAL_TYPE>();
         prepare_template<TMB_FIMS_FIRST_ORDER>();
         prepare_template<TMB_FIMS_SECOND_ORDER>();
@@ -243,18 +354,9 @@ public:
      * Print model values.
      */
     void show_() {
-        // std::cout<<"vonBertalanffy:\n";
-        // std::cout<<"k = "<<this->k.value<<"\n";
-        // std::cout<<"a_min = "<<this->a_min.value<<"\n";
-        // std::cout<<"l_inf = "<<this->l_inf.value<<"\n";
-        // std::cout<<std::setw(15)<<"observed  "<<std::setw(15)<<"predicted\n";
-        // for(int i =0; i < this->predicted.size(); i++){
-        //     std::cout<<std::setw(15)<<this->obs[i]<<std::setw(15)<<this->predicted[i]<<"\n";
-        // }
 
-
-        Rcout << "vonBertalanffy:\n";
-
+        Rcout << "vonBertalanffy\n";
+        Rcout << "id:" << this->id << "\n";
         Rcout << "function value: " << this->objective_function_value << "\n";
 
         Rcout << std::setw(15) << "observed  " << std::setw(15) << "predicted\n";
@@ -271,10 +373,60 @@ public:
     }
 };
 vonBertalanffyInterface* vonBertalanffyInterface::instance = NULL;
+size_t vonBertalanffyInterface::id_g = 1;
+
+void SetName(vonBertalanffyInterface& v) {
+
+    Rcpp::Environment env = Rcpp::Environment::global_env();
+    Rcpp::List l = Rcpp::as<Rcpp::List>(env.ls(true));
+    SEXP e, E, EE;
+
+
+    for (int i = 0; i < l.size(); i++) {
+        std::cout << "\n\n\n" << i << " " << Rcpp::as<std::string>(l[i]) << "\n";
+        std::string code = "capture.output(show(vonB))"; // R code to evaluate
+        std::stringstream ss;
+        ss << "capture.output(show(" << Rcpp::as<std::string>(l[i]) << "))"; //, file = NULL, append = FALSE, type = c(\"output\", \"message\"), split = FALSE)";
+        if (StartsWith(Rcpp::as<std::string>(l[i]), ".")) {
+            continue;
+        }
+        SEXP expression, result;
+        ParseStatus status;
+
+        PROTECT(expression = R_ParseVector(Rf_mkString(ss.str().c_str()), 1, &status, R_NilValue));
+
+        if (status != PARSE_OK) {
+            std::cout << "Error parsing expression" << std::endl;
+            UNPROTECT(1);
+        }
+
+        PROTECT(result = Rf_eval(VECTOR_ELT(expression, 0), R_GlobalEnv));
+
+        if (TYPEOF(result) == STRSXP) {
+            for (int j = 0; j < LENGTH(result); j++) {
+                std::string str(CHAR(STRING_ELT(result, j)));
+                if (str == "vonBertalanffy") {
+
+                    std::string line(CHAR(STRING_ELT(result, j + 1)));
+                    std::vector<std::string> tokens;
+                    Tokenize(line, tokens, ":");
+                    if (StringToNumber<size_t> (tokens[1]) == v.id) {
+                        v.name = Rcpp::as<std::string>(l[i]);
+                    }
+                } else {
+                    break;
+                }
+                std::cout << CHAR(STRING_ELT(result, j)) << std::endl;
+            }
+        }
+    }
+    UNPROTECT(2);
+
+
+
+}
 
 void MapTo(const Variable& a, const Variable& b) {
-
-
 
     std::pair<size_t, size_t> p;
     p.first = a.id;
@@ -302,6 +454,7 @@ Rcpp::NumericVector get_parameter_vector() {
 
 
     for (int i = 0; i < model->parameters.size(); i++) {
+
         p.push_back(*model->parameters[i]);
     }
 
@@ -319,6 +472,7 @@ Rcpp::NumericVector get_random_effects_vector() {
 
 
     for (int i = 0; i < model->random_effects.size(); i++) {
+
         p.push_back(*model->random_effects[i]);
     }
 
@@ -329,6 +483,7 @@ Rcpp::NumericVector get_random_effects_vector() {
  * Clears the vector of independent variables.
  */
 void clear() {
+
     VonBertalanffyModel<TMB_FIMS_REAL_TYPE>::getInstance()->parameters.clear();
     VonBertalanffyModel<TMB_FIMS_FIRST_ORDER>::getInstance()->parameters.clear();
     VonBertalanffyModel<TMB_FIMS_SECOND_ORDER>::getInstance()->parameters.clear();
@@ -354,6 +509,7 @@ void clear() {
  * Define the Rcpp module.
  */
 RCPP_MODULE(growth) {
+
     Rcpp::class_<Variable>("Variable")
             .constructor()
             .field("value", &Variable::value)
@@ -365,6 +521,8 @@ RCPP_MODULE(growth) {
             .method("check_list", &vonBertalanffyInterface::check_list)
             .method("finalize", &vonBertalanffyInterface::finalize)
             .method("show", &vonBertalanffyInterface::show_)
+            .field("name", &vonBertalanffyInterface::name)
+            .field("id", &vonBertalanffyInterface::id)
             .field("log_k_mean", &vonBertalanffyInterface::log_k_mean)
             .field("log_k_sigma", &vonBertalanffyInterface::log_k_sigma)
             .field("log_k", &vonBertalanffyInterface::log_k)
@@ -387,6 +545,7 @@ RCPP_MODULE(growth) {
     Rcpp::function("get_random_effects_vector", get_random_effects_vector);
     Rcpp::function("map_to", MapTo);
     Rcpp::function("clear", clear);
+    Rcpp::function("set_name", SetName);
 };
 
 /**
