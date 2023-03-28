@@ -30,6 +30,7 @@ class Variable {
 public:
     static size_t id_g;
     size_t id;
+    std::string name;
     static std::vector<Variable*> parameters;
     static std::vector<Variable*> estimated_parameters;
     bool estimable = false;
@@ -130,7 +131,7 @@ public:
         }
     }
 
-    void SetName() {
+    void set_name() {
 
         Rcpp::Environment env = Rcpp::Environment::global_env();
         Rcpp::List l = Rcpp::as<Rcpp::List>(env.ls(true));
@@ -299,7 +300,7 @@ public:
      */
     void prepare() {
 
-        this->SetName();
+        this->set_name();
         prepare_template<TMB_FIMS_REAL_TYPE>();
         prepare_template<TMB_FIMS_FIRST_ORDER>();
         prepare_template<TMB_FIMS_SECOND_ORDER>();
