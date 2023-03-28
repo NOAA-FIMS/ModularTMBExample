@@ -375,56 +375,7 @@ public:
 vonBertalanffyInterface* vonBertalanffyInterface::instance = NULL;
 size_t vonBertalanffyInterface::id_g = 1;
 
-void SetName(vonBertalanffyInterface& v) {
 
-    Rcpp::Environment env = Rcpp::Environment::global_env();
-    Rcpp::List l = Rcpp::as<Rcpp::List>(env.ls(true));
-    SEXP e, E, EE;
-
-
-    for (int i = 0; i < l.size(); i++) {
-        std::cout << "\n\n\n" << i << " " << Rcpp::as<std::string>(l[i]) << "\n";
-        std::string code = "capture.output(show(vonB))"; // R code to evaluate
-        std::stringstream ss;
-        ss << "capture.output(show(" << Rcpp::as<std::string>(l[i]) << "))"; //, file = NULL, append = FALSE, type = c(\"output\", \"message\"), split = FALSE)";
-        if (StartsWith(Rcpp::as<std::string>(l[i]), ".")) {
-            continue;
-        }
-        SEXP expression, result;
-        ParseStatus status;
-
-        PROTECT(expression = R_ParseVector(Rf_mkString(ss.str().c_str()), 1, &status, R_NilValue));
-
-        if (status != PARSE_OK) {
-            std::cout << "Error parsing expression" << std::endl;
-            UNPROTECT(1);
-        }
-
-        PROTECT(result = Rf_eval(VECTOR_ELT(expression, 0), R_GlobalEnv));
-
-        if (TYPEOF(result) == STRSXP) {
-            for (int j = 0; j < LENGTH(result); j++) {
-                std::string str(CHAR(STRING_ELT(result, j)));
-                if (str == "vonBertalanffy") {
-
-                    std::string line(CHAR(STRING_ELT(result, j + 1)));
-                    std::vector<std::string> tokens;
-                    Tokenize(line, tokens, ":");
-                    if (StringToNumber<size_t> (tokens[1]) == v.id) {
-                        v.name = Rcpp::as<std::string>(l[i]);
-                    }
-                } else {
-                    break;
-                }
-                std::cout << CHAR(STRING_ELT(result, j)) << std::endl;
-            }
-        }
-    }
-    UNPROTECT(2);
-
-
-
-}
 
 void MapTo(const Variable& a, const Variable& b) {
 
@@ -545,7 +496,6 @@ RCPP_MODULE(growth) {
     Rcpp::function("get_random_effects_vector", get_random_effects_vector);
     Rcpp::function("map_to", MapTo);
     Rcpp::function("clear", clear);
-    Rcpp::function("set_name", SetName);
 };
 
 /**
