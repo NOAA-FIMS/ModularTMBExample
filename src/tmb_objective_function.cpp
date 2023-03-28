@@ -139,7 +139,6 @@ public:
 
 
         for (int i = 0; i < l.size(); i++) {
-            std::string code = "capture.output(show(vonB))"; // R code to evaluate
             std::stringstream ss;
             ss << "capture.output(show(" << Rcpp::as<std::string>(l[i]) << "))"; //, file = NULL, append = FALSE, type = c(\"output\", \"message\"), split = FALSE)";
             if (StartsWith(Rcpp::as<std::string>(l[i]), ".")) {
