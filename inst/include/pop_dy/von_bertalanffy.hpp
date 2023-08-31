@@ -21,32 +21,15 @@ public:
   Type a_min;
   Type alpha;
   Type beta;
-  //singleton instance based on Type
-  static VonBertalanffyModel<Type>* instance;
   
-  /**
-   * Returns the sigleton instance of VonBertalanffyModel
-   * of type Type.
-   */
-  static VonBertalanffyModel<Type>* getInstance(){
-    return VonBertalanffyModel<Type>::instance;
-  }
   
   /**
    * Objective function to compute least squares
    * of observed and predicted length.
    */
-  Type evaluate(){
-    if(this->predicted.size()==0){
-      this->predicted.resize(ages.size());
-    }
-    Type norm2 = 0.0;
-    for(int i =0; i < ages.size(); i++){
-        Type temp = this->l_inf * (1.0 - exp(-k * (ages[i] - this->a_min)));
-        this->predicted[i] = temp;
-        norm2+=(temp-data[i])*(temp-data[i]);
-    }
-    return norm2;
+  Type evaluate(const Type& age){
+    Type ret = this->l_inf * (1.0 - exp(-k * (age- this->a_min)));
+    return ret;
   }
   
   /**
@@ -57,8 +40,6 @@ public:
   }
 };
 
-template<class Type>
-VonBertalanffyModel<Type>* VonBertalanffyModel<Type>::instance = new VonBertalanffyModel<Type>();
 
 
 #endif
