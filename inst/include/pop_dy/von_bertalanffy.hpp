@@ -2,20 +2,19 @@
 #define  VONBERTALANFFY_HPP
 
 #include <vector>
-#include "interface.hpp"
+#include "../interface/interface.hpp"
 
 /**
  * Portable von Bertalanffy model. Can be used in multiple
  * modeling platforms.
  */
 template<typename Type>
-class VonBertalanffyModel{
+class VonBertalanffy{
 public:
   //using traits for modeling platform specific structures
   typename model_traits<Type>::data_vector data;
   std::vector<Type> predicted;
   std::vector<double> ages;
-  std::vector<Type*> parameters;
   Type k;
   Type l_inf;
   Type a_min;
@@ -32,12 +31,7 @@ public:
     return ret;
   }
   
-  /**
-   * clears the estimated parameter list
-   */
-  void clear(){
-    this->parameters.clear();
-  }
+  
 };
 
 

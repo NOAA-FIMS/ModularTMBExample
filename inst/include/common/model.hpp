@@ -1,8 +1,13 @@
+
+#include "../pop_dy/von_bertalanffy.hpp"
+
 template<typename Type>
 class Model{
     public:
     std::vector<double> data; //TODO: make sure data not empty
+    std::vector<double> ages;
     VonBertalanffy<Type>* vb;
+    std::vector<Type*> parameters;
 
 
 
@@ -30,9 +35,15 @@ class Model{
     return norm2;
   }
   
+  /**
+   * clears the estimated parameter list
+   */
+  void clear(){
+    this->parameters.clear();
   }
+  
+  };
 
 template<typename Type>
 Model<Type>* Model<Type>::instance = new Model<Type>();
 
-}

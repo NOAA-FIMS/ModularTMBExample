@@ -6,11 +6,14 @@
 #include <math.h>
 #include <iomanip>
 #include <iostream>
-#include "von_bertalanffy.hpp"
-#include "init.hpp"
 
-#define RCPP_NO_SUGAR
-#include <Rcpp.h>
+
+#include "../inst/include/common/model.hpp"
+#include "init.hpp"
+#include "../inst/include/interface/rcpp/rcpp_interface.hpp"
+
+
+
 
 
 
