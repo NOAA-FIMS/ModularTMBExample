@@ -1,5 +1,5 @@
+#include "rcpp_interface_base.hpp"
 
-template< class Type>
 class vonBertalanffyInterface{
 public:
     Rcpp::NumericVector data;
@@ -25,17 +25,17 @@ public:
             Rcpp::stop("ages vector length not equal to data vector length");
         }
         
-        VonBertalanffyModel<double>* model_1 =
-        VonBertalanffyModel<double>::getInstance();
+        VonBertalanffy<double>* vb_1;
+        Model<double>* model_1 = Model<double>::getInstance();
         
-        VonBertalanffyModel<AD<double> >* model_2 =
-        VonBertalanffyModel<AD<double> >::getInstance();
+        VonBertalanffy<double>* vb_2;
+        Model<double>* model_2 = Model<double>::getInstance();
         
-        VonBertalanffyModel<AD<AD<double> > >* model_3 =
-        VonBertalanffyModel<AD<AD<double> > >::getInstance();
+        VonBertalanffy<double>* vb_3;
+        Model<double>* model_3 = Model<double>::getInstance();
         
-        VonBertalanffyModel<AD<AD<AD<double> > > >* model_4 =
-        VonBertalanffyModel<AD<AD<AD<double> > > >::getInstance();
+        VonBertalanffy<double>* vb_4;
+        Model<double>* model_4 = Model<double>::getInstance();
         
         
         model_1->clear();
@@ -43,100 +43,100 @@ public:
         model_3->clear();
         model_4->clear();
         
-        model_1->predicted.resize(model_1->data.size());
-        model_2->predicted.resize(model_1->data.size());
-        model_3->predicted.resize(model_1->data.size());
-        model_4->predicted.resize(model_1->data.size());
+        vb_1->predicted.resize(vb_1->data.size());
+        vb_2->predicted.resize(vb_1->data.size());
+        vb_3->predicted.resize(vb_1->data.size());
+        vb_4->predicted.resize(vb_1->data.size());
         
-        model_1->ages.resize(this->ages.size());
-        model_1->data.resize(this->data.size());
-        model_2->ages.resize(this->ages.size());
-        model_2->data.resize(this->data.size());
-        model_3->ages.resize(this->ages.size());
-        model_3->data.resize(this->data.size());
-        model_4->ages.resize(this->ages.size());
-        model_4->data.resize(this->data.size());
+        vb_1->ages.resize(this->ages.size());
+        vb_1->data.resize(this->data.size());
+        vb_2->ages.resize(this->ages.size());
+        vb_2->data.resize(this->data.size());
+        vb_3->ages.resize(this->ages.size());
+        vb_3->data.resize(this->data.size());
+        vb_4->ages.resize(this->ages.size());
+        vb_4->data.resize(this->data.size());
         
         for(int i =0; i < this->data.size(); i++){
-            model_1->ages[i] = this->ages[i];
-            model_1->data[i] = this->data[i];
+            vb_1->ages[i] = this->ages[i];
+            vb_1->data[i] = this->data[i];
             
-            model_2->ages[i] = this->ages[i];
-            model_2->data[i] = this->data[i];
+            vb_2->ages[i] = this->ages[i];
+            vb_2->data[i] = this->data[i];
             
-            model_2->ages[i] = this->ages[i];
-            model_2->data[i] = this->data[i];
+            vb_2->ages[i] = this->ages[i];
+            vb_2->data[i] = this->data[i];
             
-            model_3->ages[i] = this->ages[i];
-            model_3->data[i] = this->data[i];
+            vb_3->ages[i] = this->ages[i];
+            vb_3->data[i] = this->data[i];
             
-            model_4->ages[i] = this->ages[i];
-            model_4->data[i] = this->data[i];
+            vb_4->ages[i] = this->ages[i];
+            vb_4->data[i] = this->data[i];
         }
         
         //initialize k
-        model_1->k = this->k.value;
-        model_2->k = this->k.value;
-        model_3->k = this->k.value;
-        model_4->k = this->k.value;
+        vb_1->k = this->k.value;
+        vb_2->k = this->k.value;
+        vb_3->k = this->k.value;
+        vb_4->k = this->k.value;
         
         //initialize l_inf
-        model_1->l_inf = this->l_inf.value;
-        model_2->l_inf = this->l_inf.value;
-        model_3->l_inf = this->l_inf.value;
-        model_4->l_inf = this->l_inf.value;
+        vb_1->l_inf = this->l_inf.value;
+        vb_2->l_inf = this->l_inf.value;
+        vb_3->l_inf = this->l_inf.value;
+        vb_4->l_inf = this->l_inf.value;
         
         //initialize a_min
-        model_1->a_min = this->a_min.value;
-        model_2->a_min = this->a_min.value;
-        model_3->a_min = this->a_min.value;
-        model_4->a_min = this->a_min.value;
+        vb_1->a_min = this->a_min.value;
+        vb_2->a_min = this->a_min.value;
+        vb_3->a_min = this->a_min.value;
+        vb_4->a_min = this->a_min.value;
         
         //initialize alpha
-        model_1->alpha = this->alpha.value;
-        model_2->alpha = this->alpha.value;
-        model_3->alpha = this->alpha.value;
-        model_4->alpha = this->alpha.value;
+        vb_1->alpha = this->alpha.value;
+        vb_2->alpha = this->alpha.value;
+        vb_3->alpha = this->alpha.value;
+        vb_4->alpha = this->alpha.value;
         
         //initialize beta
-        model_1->beta = this->beta.value;
-        model_2->beta = this->beta.value;
-        model_3->beta = this->beta.value;
-        model_4->beta = this->beta.value;
+        vb_1->beta = this->beta.value;
+        vb_2->beta = this->beta.value;
+        vb_3->beta = this->beta.value;
+        vb_4->beta = this->beta.value;
         
         if(this->k.estimable){
-            model_1->parameters.push_back(&model_1->k);
-            model_2->parameters.push_back(&model_2->k);
-            model_3->parameters.push_back(&model_3->k);
-            model_4->parameters.push_back(&model_4->k);
+            model_1->parameters.push_back(&vb_1->k);
+            model_2->parameters.push_back(&vb_2->k);
+            model_3->parameters.push_back(&vb_3->k);
+            model_4->parameters.push_back(&vb_4->k);
         }
         
         if(this->l_inf.estimable){
-            model_1->parameters.push_back(&model_1->l_inf);
-            model_2->parameters.push_back(&model_2->l_inf);
-            model_3->parameters.push_back(&model_3->l_inf);
-            model_4->parameters.push_back(&model_4->l_inf);
+            model_1->parameters.push_back(&vb_1->l_inf);
+            model_2->parameters.push_back(&vb_2->l_inf);
+            model_3->parameters.push_back(&vb_3->l_inf);
+            model_4->parameters.push_back(&vb_4->l_inf);
         }
         
         if(this->a_min.estimable){
-            model_1->parameters.push_back(&model_1->a_min);
-            model_2->parameters.push_back(&model_2->a_min);
-            model_3->parameters.push_back(&model_3->a_min);
-            model_4->parameters.push_back(&model_4->a_min);
+            model_1->parameters.push_back(&vb_1->a_min);
+            model_2->parameters.push_back(&vb_2->a_min);
+            model_3->parameters.push_back(&vb_3->a_min);
+            model_4->parameters.push_back(&vb_4->a_min);
         }
         
         if(this->alpha.estimable){
-            model_1->parameters.push_back(&model_1->alpha);
-            model_2->parameters.push_back(&model_2->alpha);
-            model_3->parameters.push_back(&model_3->alpha);
-            model_4->parameters.push_back(&model_4->alpha);
+            model_1->parameters.push_back(&vb_1->alpha);
+            model_2->parameters.push_back(&vb_2->alpha);
+            model_3->parameters.push_back(&vb_3->alpha);
+            model_4->parameters.push_back(&vb_4->alpha);
         }
         
         if(this->beta.estimable){
-            model_1->parameters.push_back(&model_1->beta);
-            model_2->parameters.push_back(&model_2->beta);
-            model_3->parameters.push_back(&model_3->beta);
-            model_4->parameters.push_back(&model_4->beta);
+            model_1->parameters.push_back(&vb_1->beta);
+            model_2->parameters.push_back(&vb_2->beta);
+            model_3->parameters.push_back(&vb_3->beta);
+            model_4->parameters.push_back(&vb_4->beta);
         }
     }
     
@@ -145,8 +145,8 @@ public:
      * portable model once and transfers values back to the Rcpp interface.
      */
     void finalize(Rcpp::NumericVector v){
-        VonBertalanffyModel<double>* model =
-        VonBertalanffyModel<double>::getInstance();
+        Model<double>* model = Model<double>::getInstance();
+        VonBertalanffy<double>* vb;
         
         for(int i =0; i < v.size(); i++){
             (*model->parameters[i]) = v[i];
@@ -154,12 +154,12 @@ public:
         
         double f = model->evaluate();
         
-        this->k.value = model->k;
-        this->a_min.value = model->a_min;
-        this->l_inf.value = model->l_inf;
-        this->predicted = Rcpp::NumericVector(model->predicted.size());
-        for(int i =0; i < model->predicted.size(); i++){
-            this->predicted[i] = model->predicted[i];
+        this->k.value = vb->k;
+        this->a_min.value = vb->a_min;
+        this->l_inf.value = vb->l_inf;
+        this->predicted = Rcpp::NumericVector(vb->predicted.size());
+        for(int i =0; i < vb->predicted.size(); i++){
+            this->predicted[i] = vb->predicted[i];
         }
     }
     

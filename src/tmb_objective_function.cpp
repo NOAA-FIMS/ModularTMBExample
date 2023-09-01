@@ -13,12 +13,6 @@
 #include "../inst/include/interface/rcpp/rcpp_interface.hpp"
 
 
-
-
-
-
-
-
 /**
  * TMB objective function. Calls the portable von Bertalanffy
  * object.

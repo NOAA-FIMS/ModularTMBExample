@@ -1,7 +1,5 @@
 #include "rcpp_objects/rcpp_growth.hpp"
 
-
-
 /**
  * Exposes the Variable and vonBertalanffyInterface classes to R.
  */
