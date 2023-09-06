@@ -1,12 +1,11 @@
-
+#include "../common/data.hpp"
 #include "../pop_dy/von_bertalanffy.hpp"
 
 template<typename Type>
 class Model{
     public:
-    std::vector<double> data; //TODO: make sure data not empty
-    std::vector<double> ages;
     VonBertalanffy<Type>* vb;
+    ObsData<Type>* obsdata;
     std::vector<Type*> parameters;
 
 
@@ -28,9 +27,9 @@ class Model{
    */
   Type evaluate(){
     Type norm2 = 0.0;
-    for(int i =0; i < ages.size(); i++){
-        Type pred = vb -> evaluate(ages[i]);
-        norm2+=(pred-data[i])*(pred-data[i]);
+    for(int i =0; i < obsdata->ages.size(); i++){
+        Type pred = vb -> evaluate(obsdata->ages[i]);
+        norm2+=(pred-obsdata->data[i])*(pred-obsdata->data[i]);
     }
     return norm2;
   }

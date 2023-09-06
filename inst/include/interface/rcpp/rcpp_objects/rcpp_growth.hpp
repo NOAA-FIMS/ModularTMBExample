@@ -1,10 +1,10 @@
+#ifndef RCPP_GROWTH
+#define RCPP_GROWTH
+
 #include "rcpp_interface_base.hpp"
 
-class vonBertalanffyInterface{
+class vonBertalanffyInterface  : public RcppInterfaceBase {
 public:
-    Rcpp::NumericVector data;
-    Rcpp::NumericVector ages;
-    Rcpp::NumericVector predicted;
     Variable k;
     Variable l_inf;
     Variable a_min;
@@ -14,17 +14,8 @@ public:
       /**
      * Prepares the model to work with TMB.
      */
-    void prepare(){
-        
-        // if(this->data.size() != this->ages.size()){
-        //     std::cout<<"Error: ages vector length not equal to data vector length, abort\n";
-        //     return;
-        // }
-
-        if(this->data.size() != this->ages.size()){
-            Rcpp::stop("ages vector length not equal to data vector length");
-        }
-        
+    virtual bool prepare(){
+               
         VonBertalanffy<double>* vb_1;
         Model<double>* model_1 = Model<double>::getInstance();
         
@@ -37,43 +28,11 @@ public:
         VonBertalanffy<double>* vb_4;
         Model<double>* model_4 = Model<double>::getInstance();
         
-        
         model_1->clear();
         model_2->clear();
         model_3->clear();
         model_4->clear();
-        
-        vb_1->predicted.resize(vb_1->data.size());
-        vb_2->predicted.resize(vb_1->data.size());
-        vb_3->predicted.resize(vb_1->data.size());
-        vb_4->predicted.resize(vb_1->data.size());
-        
-        vb_1->ages.resize(this->ages.size());
-        vb_1->data.resize(this->data.size());
-        vb_2->ages.resize(this->ages.size());
-        vb_2->data.resize(this->data.size());
-        vb_3->ages.resize(this->ages.size());
-        vb_3->data.resize(this->data.size());
-        vb_4->ages.resize(this->ages.size());
-        vb_4->data.resize(this->data.size());
-        
-        for(int i =0; i < this->data.size(); i++){
-            vb_1->ages[i] = this->ages[i];
-            vb_1->data[i] = this->data[i];
-            
-            vb_2->ages[i] = this->ages[i];
-            vb_2->data[i] = this->data[i];
-            
-            vb_2->ages[i] = this->ages[i];
-            vb_2->data[i] = this->data[i];
-            
-            vb_3->ages[i] = this->ages[i];
-            vb_3->data[i] = this->data[i];
-            
-            vb_4->ages[i] = this->ages[i];
-            vb_4->data[i] = this->data[i];
-        }
-        
+       
         //initialize k
         vb_1->k = this->k.value;
         vb_2->k = this->k.value;
@@ -138,6 +97,7 @@ public:
             model_3->parameters.push_back(&vb_3->beta);
             model_4->parameters.push_back(&vb_4->beta);
         }
+        
     }
     
     /**
@@ -157,34 +117,9 @@ public:
         this->k.value = vb->k;
         this->a_min.value = vb->a_min;
         this->l_inf.value = vb->l_inf;
-        this->predicted = Rcpp::NumericVector(vb->predicted.size());
-        for(int i =0; i < vb->predicted.size(); i++){
-            this->predicted[i] = vb->predicted[i];
-        }
-    }
-    
-    /**
-     * Print model values.
-     */
-    void show_(){
-        // std::cout<<"vonBertalanffy:\n";
-        // std::cout<<"k = "<<this->k.value<<"\n";
-        // std::cout<<"a_min = "<<this->a_min.value<<"\n";
-        // std::cout<<"l_inf = "<<this->l_inf.value<<"\n";
-        // std::cout<<std::setw(15)<<"observed  "<<std::setw(15)<<"predicted\n";
-        // for(int i =0; i < this->predicted.size(); i++){
-        //     std::cout<<std::setw(15)<<this->data[i]<<std::setw(15)<<this->predicted[i]<<"\n";
-        // }
-        
-        
-        Rcout<<"vonBertalanffy:\n";
-        Rcout<<"k = "<<this->k.value<<"\n";
-        Rcout<<"a_min = "<<this->a_min.value<<"\n";
-        Rcout<<"l_inf = "<<this->l_inf.value<<"\n";
-        Rcout<<std::setw(15)<<"observed  "<<std::setw(15)<<"predicted\n";
-        for(int i =0; i < this->predicted.size(); i++){
-            Rcout<<std::setw(15)<<this->data[i]<<std::setw(15)<<this->predicted[i]<<"\n";
-        }
         
     }
+            
 };
+
+#endif

@@ -1,5 +1,5 @@
 #include "rcpp_objects/rcpp_growth.hpp"
-
+#include "rcpp_objects/rcpp_data.hpp"
 /**
  * Exposes the Variable and vonBertalanffyInterface classes to R.
  */
@@ -36,19 +36,18 @@ RCPP_MODULE(growth) {
     .constructor()
     .field("value", &Variable::value)
     .field("estimable",&Variable::estimable);
+    Rcpp::class_<ObsDataInterface>("ObsData")
+    .constructor()
+    .method("prepare", &ObsDataInterface::prepare);
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
     .constructor()
     .method("prepare", &vonBertalanffyInterface::prepare)
     .method("finalize", &vonBertalanffyInterface::finalize)
-    .method("show", &vonBertalanffyInterface::show_)
     .field("k", &vonBertalanffyInterface::k)
     .field("l_inf", &vonBertalanffyInterface::l_inf)
     .field("a_min", &vonBertalanffyInterface::a_min)
     .field("alpha", &vonBertalanffyInterface::alpha)
-    .field("beta", &vonBertalanffyInterface::beta)
-    .field("ages", &vonBertalanffyInterface::ages)
-    .field("data", &vonBertalanffyInterface::data)
-    .field("predicted", &vonBertalanffyInterface::predicted);
+    .field("beta", &vonBertalanffyInterface::beta);
     Rcpp::function("get_parameter_vector", get_parameter_vector);
     Rcpp::function("clear", clear);
 };
