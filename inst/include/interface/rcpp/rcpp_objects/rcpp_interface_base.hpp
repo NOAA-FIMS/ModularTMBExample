@@ -1,5 +1,13 @@
+#ifndef RCPP_INTERFACE_BASE_HPP
+#define  RCPP_INTERFACE_BASE_HPP
+
+#include "../../../common/def.hpp"
+
+
 #define RCPP_NO_SUGAR
 #include <Rcpp.h>
+
+
 
 /**
  * Rcpp representation of a variable
@@ -20,3 +28,5 @@ public:
 
 std::vector<Variable*> Variable::parameters;
 std::vector<Variable*> Variable::estimated_parameters;
+
+#endif

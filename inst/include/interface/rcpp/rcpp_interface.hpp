@@ -1,3 +1,8 @@
+#ifndef RCPP_INTERFACE_HPP
+#define  RCPP_INTERFACE_HPP
+
+
+
 #include "rcpp_objects/rcpp_growth.hpp"
 
 /**
@@ -52,3 +57,5 @@ RCPP_MODULE(growth) {
     Rcpp::function("get_parameter_vector", get_parameter_vector);
     Rcpp::function("clear", clear);
 };
+
+#endif

@@ -17,7 +17,7 @@ ages<-c(0.1, 1,2,3,4,5,6,7,8)
 data<-replicate(length(ages), 0.0)
 
 for(i in 1:length(ages)){
-  data[i] = (l_inf * (1.0 - exp(-k * (ages[i] - a_min))))*runif(1,.95,1.1)
+  data[i] = (l_inf * (1.0 - exp(-k * (ages[i] - a_min))))* runif(1,.90,1.5)
 }
 
 #clear the parameter list, if there already is one
@@ -58,9 +58,9 @@ parameters <- list(
 #gradients aren't accessible when using TMBad:
 #make the AD function in TMB
 obj <- MakeADFun(data, parameters, DLL="ModularTMBExample")
-newtonOption(obj, smartsearch=FALSE)
+#newtonOption(obj, smartsearch=FALSE)
 
-obj$gr(obj$par)
+print(obj$gr(obj$par))
 
 ## Fit model
 opt <- nlminb(obj$par, obj$fn, obj$gr)
@@ -73,10 +73,9 @@ vonB$finalize(rep$par.fixed)
 
 #show results
 vonB$show()
+
 obj$report()
 
 #show final gradient
 print("final gradient:")
 print(rep$gradient.fixed)
-
-

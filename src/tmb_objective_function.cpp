@@ -8,10 +8,12 @@
 #include <iostream>
 
 
-#include "../inst/include/common/model.hpp"
-#include "init.hpp"
-#include "../inst/include/interface/rcpp/rcpp_interface.hpp"
 
+
+#include "../inst/include/interface/rcpp/rcpp_interface.hpp"
+#include "../inst/include/interface/interface.hpp"
+#include "init.hpp"
+#include "../inst/include/common/model.hpp"
 
 /**
  * TMB objective function. Calls the portable von Bertalanffy
@@ -26,7 +28,7 @@ template<typename Type>
 Type objective_function<Type>::operator()(){
     
     //get the singleton instance for type Type
-    Model<Type>* model =
+   std::shared_ptr< Model<Type> > model =
     Model<Type>::getInstance();
     
     //get the parameter values
