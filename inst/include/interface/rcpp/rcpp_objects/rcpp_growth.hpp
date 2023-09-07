@@ -1,5 +1,5 @@
-#ifndef RCPPGROWTH_HPP
-#define  RCPPGROWTH_HPP
+#ifndef RCPP_GROWTH_HPP
+#define  RCPP_GROWTH_HPP
 
 
 #include "../../../common/model.hpp"
@@ -7,15 +7,14 @@
 #include "../../../pop_dy/von_bertalanffy.hpp"
 
 class vonBertalanffyInterface {
+
 public:
-    Rcpp::NumericVector data;
-    Rcpp::NumericVector ages;
-    Rcpp::NumericVector predicted;
     Variable k;
     Variable l_inf;
     Variable a_min;
     Variable alpha;
     Variable beta;
+
 
     template<typename Type>
     void prepare_local() {
@@ -70,6 +69,7 @@ public:
         if (this->beta.estimable) {
             model_1->parameters.push_back(&(model_1->vb)->beta);
         }
+        
     }
 
     /**
@@ -116,6 +116,7 @@ public:
         this->a_min.value = vb->a_min;
         this->l_inf.value = vb->l_inf;
 
+
         for (int i = 0; i < this->predicted.size(); i++) {
             this->predicted[i] = model->predicted[i];
         }
@@ -136,6 +137,7 @@ public:
         }
 
     }
+
 };
 
 #endif

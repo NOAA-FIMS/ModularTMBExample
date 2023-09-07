@@ -12,7 +12,7 @@
 template<typename Type>
 class VonBertalanffy{
 public:
- 
+
   Type k;
   Type l_inf;
   Type a_min;
