@@ -17,80 +17,65 @@ public:
 
 
     template<typename Type>
-    void prepare_local() {
+    bool prepare_local() {
 
-        std::shared_ptr<Model<Type> > model_1 = Model<Type>::getInstance();
+        std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
+        std::shared_ptr< VonBertalanffy<Type> > vb;
+        vb = std::make_shared<VonBertalanffy<Type> >();
 
-        //        model_1->clear();
-        model_1->predicted.resize(this->data.size());
-        model_1->ages.resize(this->ages.size());
-        model_1->data.resize(this->data.size());
-        for (int i = 0; i < this->data.size(); i++) {
-            model_1->ages[i] = this->ages[i];
-            model_1->data[i] = this->data[i];
-        }
 
         //initialize k
-        model_1->vb->k = this->k.value;
-
+        vb->k = this->k.value;
 
         //initialize l_inf
-        model_1->vb->l_inf = this->l_inf.value;
-
+        vb->l_inf = this->l_inf.value;
 
         //initialize a_min
-        model_1->vb->a_min = this->a_min.value;
-
+        vb->a_min = this->a_min.value;
 
         //initialize alpha
-        model_1->vb->alpha = this->alpha.value;
-
+        vb->alpha = this->alpha.value;
 
         //initialize beta
-        model_1->vb->beta = this->beta.value;
+        vb->beta = this->beta.value;
 
 
         if (this->k.estimable) {
-            model_1->parameters.push_back(&(model_1->vb)->k);
+            model->parameters.push_back(&(vb)->k);
         }
 
         if (this->l_inf.estimable) {
-            model_1->parameters.push_back(&(model_1->vb)->l_inf);
+            model->parameters.push_back(&(vb)->l_inf);
         }
 
         if (this->a_min.estimable) {
-            model_1->parameters.push_back(&(model_1->vb)->a_min);
+            model->parameters.push_back(&(vb)->a_min);
         }
 
         if (this->alpha.estimable) {
-            model_1->parameters.push_back(&(model_1->vb)->alpha);
+            model->parameters.push_back(&(vb)->alpha);
         }
 
         if (this->beta.estimable) {
-            model_1->parameters.push_back(&(model_1->vb)->beta);
+            model->parameters.push_back(&(vb)->beta);
         }
+        return true;
         
     }
 
     /**
      * Prepares the model to work with TMB.
      */
-    void prepare() {
-
-
-        if (this->data.size() != this->ages.size()) {
-            Rcpp::stop("ages vector length not equal to data vector length");
-        }
-
-        this->predicted = Rcpp::NumericVector(this->ages.size());
+    virtual bool prepare() {
 
 #ifdef TMB_MODEL
-
         this->prepare_local<TMB_FIMS_REAL_TYPE>();
         this->prepare_local<TMB_FIMS_FIRST_ORDER>();
         this->prepare_local<TMB_FIMS_SECOND_ORDER>();
         this->prepare_local<TMB_FIMS_THIRD_ORDER>();
+        
 #endif
+        return true;
 
     }
 
@@ -100,11 +85,9 @@ public:
      */
     void finalize(Rcpp::NumericVector v) {
         std::shared_ptr< Model<double> > model = Model<double>::getInstance();
-        std::shared_ptr<VonBertalanffy<double> > vb = model->vb;
+        std::shared_ptr< VonBertalanffy<double> > vb;
+        vb = std::make_shared<VonBertalanffy<double> >();
 
-        if (this->data.size() != this->ages.size()) {
-            Rcpp::stop("finalize: ages vector length not equal to data vector length");
-        }
 
         for (int i = 0; i < v.size(); i++) {
             (*model->parameters[i]) = v[i];
@@ -117,9 +100,6 @@ public:
         this->l_inf.value = vb->l_inf;
 
 
-        for (int i = 0; i < this->predicted.size(); i++) {
-            this->predicted[i] = model->predicted[i];
-        }
     }
 
     /**
@@ -130,12 +110,6 @@ public:
         Rcpp::Rcout << "k = " << this->k.value << "\n";
         Rcpp::Rcout << "a_min = " << this->a_min.value << "\n";
         Rcpp::Rcout << "l_inf = " << this->l_inf.value << "\n";
-        Rcpp::Rcout << std::setw(15) << "observed  " << std::setw(15) << "predicted\n";
-        //Rcpp::Rcout << "Predicted size: " << this->predicted.size() << std::endl;
-        for (int i = 0; i < this->predicted.size(); i++) {
-            Rcpp::Rcout << std::left << std::setw(15) << this->data[i] << std::setw(15) << this->predicted[i] << "\n";
-        }
-
     }
 
 };

@@ -5,11 +5,20 @@
 
 #include "rcpp_objects/rcpp_growth.hpp"
 #include "rcpp_objects/rcpp_data.hpp"
+
+bool CreateModel(){
+  for (size_t i = 0; i < RcppInterfaceBase::interface_objects.size();
+       i++) {
+    RcppInterfaceBase::interface_objects[i]->prepare();
+  }
+}
+
 /**
  * Exposes the Variable and vonBertalanffyInterface classes to R.
  */
 RCPP_EXPOSED_CLASS(Variable)
 RCPP_EXPOSED_CLASS(vonBertalanffyInterface)
+RCPP_EXPOSED_CLASS(ObsDataInterface)
 
 /**
  * Returns the initial values for the parameter set
@@ -43,10 +52,11 @@ RCPP_MODULE(growth) {
     .field("estimable",&Variable::estimable);
     Rcpp::class_<ObsDataInterface>("ObsData")
     .constructor()
-    .method("prepare", &ObsDataInterface::prepare);
+    .method("finalize", &ObsDataInterface::finalize)
+    .field("Data", &ObsDataInterface::data)
+    .field("ages", &ObsDataInterface::ages);
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
     .constructor()
-    .method("prepare", &vonBertalanffyInterface::prepare)
     .method("finalize", &vonBertalanffyInterface::finalize)
     .field("k", &vonBertalanffyInterface::k)
     .field("l_inf", &vonBertalanffyInterface::l_inf)
@@ -55,6 +65,7 @@ RCPP_MODULE(growth) {
     .field("beta", &vonBertalanffyInterface::beta);
     Rcpp::function("get_parameter_vector", get_parameter_vector);
     Rcpp::function("clear", clear);
+    Rcpp::function("CreateModel", CreateModel);
 };
 
 #endif

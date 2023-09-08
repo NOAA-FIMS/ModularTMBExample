@@ -39,13 +39,14 @@ vonB$l_inf$value<-7
 vonB$l_inf$estimable<-TRUE
 
 #set data
-vonB$data <-data
+Dat <- new(g$ObsData) 
+Dat$Data <- data
 
 #set ages 
-vonB$ages<-ages
+Dat$ages<-ages
 
 #prepare for interfacing with TMB
-vonB$prepare()
+g$CreateModel()
 
 #create an empty data list (data set above)
 data <- list()
