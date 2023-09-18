@@ -4,15 +4,50 @@
 
 #include "rcpp_interface_base.hpp"
 
-class ObsDataInterface  : public RcppInterfaceBase {
+/**
+ * @brief Rcpp interface for Data as an S4 object. To instantiate
+ * from R:
+ * fleet <- new(fims$Data)
+ *
+ */
+class DataInterfaceBase : public RcppInterfaceBase {
+public:
+static uint32_t id_g; /**< static id of the DataInterface object */
+uint32_t id;          /**< local id of the DataInterface object */
+static std::map<uint32_t, DataInterfaceBase*>
+  live_objects; /**< map associating the ids of DataInterface to
+ the objects */
+
+/** @brief constructor
+ */
+DataInterfaceBase() {
+  this->id = DataInterfaceBase::id_g++;
+  DataInterfaceBase::live_objects[this->id] = this;
+  RcppInterfaceBase::interface_objects.push_back(this);
+}
+
+/** @brief destructor
+ */
+virtual ~DataInterfaceBase() {}
+
+};
+uint32_t DataInterfaceBase::id_g = 1;
+std::map<uint32_t, DataInterfaceBase*> DataInterfaceBase::live_objects;
+
+
+class ObsDataInterface  : public DataInterfaceBase {
 public:
     Rcpp::NumericVector data;
     Rcpp::NumericVector ages;
     Rcpp::NumericVector predicted;
+    
+    ObsDataInterface() : DataInterfaceBase() {}
+    
+    virtual ~ObsDataInterface() {}
 
     template<typename Type>
     bool prepare_local() {
-
+/*
         std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
         std::shared_ptr< ObsData<Type> > obsdata;
         obsdata = std::make_shared<ObsData<Type> >();
@@ -25,7 +60,7 @@ public:
             obsdata->data[i] = this->data[i];
         }
         model->predicted.resize(this->data.size());
-        
+  */      
         return true;
     }
 

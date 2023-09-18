@@ -6,7 +6,37 @@
 #include "rcpp_interface_base.hpp"
 #include "../../../pop_dy/von_bertalanffy.hpp"
 
-class vonBertalanffyInterface {
+/****************************************************************
+ * Growth Rcpp interface                                   *
+ ***************************************************************/
+/**
+ * @brief Rcpp interface that serves as the parent class for
+ * Rcpp growth interfaces. This type should be inherited and not
+ * called from R directly.
+ *
+ */
+class GrowthInterfaceBase : public RcppInterfaceBase {
+public:
+  static uint32_t id_g; /**< static id of the GrowthInterfaceBase object */
+uint32_t id;          /**< local id of the GrowthInterfaceBase object */
+static std::map<uint32_t, GrowthInterfaceBase*> live_objects; /**<
+ map relating the ID of the GrowthInterfaceBase to the GrowthInterfaceBase
+ objects */
+
+GrowthInterfaceBase() {
+  this->id = GrowthInterfaceBase::id_g++;
+  GrowthInterfaceBase::live_objects[this->id] = this;
+  RcppInterfaceBase::interface_objects.push_back(this);
+}
+
+virtual ~GrowthInterfaceBase() {}
+};
+
+uint32_t GrowthInterfaceBase::id_g = 1;
+std::map<uint32_t, GrowthInterfaceBase*> GrowthInterfaceBase::live_objects;
+
+
+class vonBertalanffyInterface : public GrowthInterfaceBase{
 
 public:
     Variable k;
@@ -14,11 +44,14 @@ public:
     Variable a_min;
     Variable alpha;
     Variable beta;
-
+    
+    vonBertalanffyInterface() : GrowthInterfaceBase(){}
+    
+    virtual ~vonBertalanffyInterface() {}
 
     template<typename Type>
     bool prepare_local() {
-
+/*
         std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
         std::shared_ptr< VonBertalanffy<Type> > vb;
         vb = std::make_shared<VonBertalanffy<Type> >();
@@ -58,7 +91,7 @@ public:
 
         if (this->beta.estimable) {
             model->parameters.push_back(&(vb)->beta);
-        }
+        }*/
         return true;
         
     }
