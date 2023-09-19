@@ -59,7 +59,7 @@ parameters <- list(
 #gradients aren't accessible when using TMBad:
 #make the AD function in TMB
 obj <- MakeADFun(data, parameters, DLL="ModularTMBExample")
-#newtonOption(obj, smartsearch=FALSE)
+newtonOption(obj, smartsearch=FALSE)
 
 print(obj$gr(obj$par))
 

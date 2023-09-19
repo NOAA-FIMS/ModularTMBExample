@@ -15,14 +15,14 @@ public:
 static uint32_t id_g; /**< static id of the DataInterface object */
 uint32_t id;          /**< local id of the DataInterface object */
 static std::map<uint32_t, DataInterfaceBase*>
-  live_objects; /**< map associating the ids of DataInterface to
+  data_objects; /**< map associating the ids of DataInterface to
  the objects */
 
 /** @brief constructor
  */
 DataInterfaceBase() {
   this->id = DataInterfaceBase::id_g++;
-  DataInterfaceBase::live_objects[this->id] = this;
+  DataInterfaceBase::data_objects[this->id] = this;
   RcppInterfaceBase::interface_objects.push_back(this);
 }
 
@@ -32,7 +32,7 @@ virtual ~DataInterfaceBase() {}
 
 };
 uint32_t DataInterfaceBase::id_g = 1;
-std::map<uint32_t, DataInterfaceBase*> DataInterfaceBase::live_objects;
+std::map<uint32_t, DataInterfaceBase*> DataInterfaceBase::data_objects;
 
 
 class ObsDataInterface  : public DataInterfaceBase {
@@ -47,20 +47,20 @@ public:
 
     template<typename Type>
     bool prepare_local() {
-/*
+
         std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
-        std::shared_ptr< ObsData<Type> > obsdata;
-        obsdata = std::make_shared<ObsData<Type> >();
+        //std::shared_ptr< ObsData<Type> > obsdata;
+        //obsdata = std::make_shared<ObsData<Type> >();
         
-        obsdata->ages.resize(this->ages.size());
-        obsdata->data.resize(this->data.size());
+        model->obsdata->ages.resize(this->ages.size());
+        model->obsdata->data.resize(this->data.size());
         
         for(int i =0; i < this->data.size(); i++){
-            obsdata->ages[i] = this->ages[i];
-            obsdata->data[i] = this->data[i];
+            model->obsdata->ages[i] = this->ages[i];
+            model->obsdata->data[i] = this->data[i];
         }
         model->predicted.resize(this->data.size());
-  */      
+     
         return true;
     }
 

@@ -19,13 +19,13 @@ class GrowthInterfaceBase : public RcppInterfaceBase {
 public:
   static uint32_t id_g; /**< static id of the GrowthInterfaceBase object */
 uint32_t id;          /**< local id of the GrowthInterfaceBase object */
-static std::map<uint32_t, GrowthInterfaceBase*> live_objects; /**<
+static std::map<uint32_t, GrowthInterfaceBase*> growth_objects; /**<
  map relating the ID of the GrowthInterfaceBase to the GrowthInterfaceBase
  objects */
 
 GrowthInterfaceBase() {
   this->id = GrowthInterfaceBase::id_g++;
-  GrowthInterfaceBase::live_objects[this->id] = this;
+  GrowthInterfaceBase::growth_objects[this->id] = this;
   RcppInterfaceBase::interface_objects.push_back(this);
 }
 
@@ -33,7 +33,7 @@ virtual ~GrowthInterfaceBase() {}
 };
 
 uint32_t GrowthInterfaceBase::id_g = 1;
-std::map<uint32_t, GrowthInterfaceBase*> GrowthInterfaceBase::live_objects;
+std::map<uint32_t, GrowthInterfaceBase*> GrowthInterfaceBase::growth_objects;
 
 
 class vonBertalanffyInterface : public GrowthInterfaceBase{
@@ -51,47 +51,47 @@ public:
 
     template<typename Type>
     bool prepare_local() {
-/*
+
         std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
-        std::shared_ptr< VonBertalanffy<Type> > vb;
-        vb = std::make_shared<VonBertalanffy<Type> >();
+        //std::shared_ptr< VonBertalanffy<Type> > vb;
+        //vb = std::make_shared<VonBertalanffy<Type> >();
 
 
         //initialize k
-        vb->k = this->k.value;
+        model->vb->k = this->k.value;
 
         //initialize l_inf
-        vb->l_inf = this->l_inf.value;
+        model->vb->l_inf = this->l_inf.value;
 
         //initialize a_min
-        vb->a_min = this->a_min.value;
+        model->vb->a_min = this->a_min.value;
 
         //initialize alpha
-        vb->alpha = this->alpha.value;
+        model->vb->alpha = this->alpha.value;
 
         //initialize beta
-        vb->beta = this->beta.value;
+        model->vb->beta = this->beta.value;
 
 
         if (this->k.estimable) {
-            model->parameters.push_back(&(vb)->k);
+            model->parameters.push_back(&(model->vb)->k);
         }
 
         if (this->l_inf.estimable) {
-            model->parameters.push_back(&(vb)->l_inf);
+            model->parameters.push_back(&(model->vb)->l_inf);
         }
 
         if (this->a_min.estimable) {
-            model->parameters.push_back(&(vb)->a_min);
+            model->parameters.push_back(&(model->vb)->a_min);
         }
 
         if (this->alpha.estimable) {
-            model->parameters.push_back(&(vb)->alpha);
+            model->parameters.push_back(&(model->vb)->alpha);
         }
 
         if (this->beta.estimable) {
-            model->parameters.push_back(&(vb)->beta);
-        }*/
+            model->parameters.push_back(&(model->vb)->beta);
+        }
         return true;
         
     }
@@ -118,8 +118,8 @@ public:
      */
     void finalize(Rcpp::NumericVector v) {
         std::shared_ptr< Model<double> > model = Model<double>::getInstance();
-        std::shared_ptr< VonBertalanffy<double> > vb;
-        vb = std::make_shared<VonBertalanffy<double> >();
+        //std::shared_ptr< VonBertalanffy<double> > vb;
+        //vb = std::make_shared<VonBertalanffy<double> >();
 
 
         for (int i = 0; i < v.size(); i++) {
@@ -128,9 +128,9 @@ public:
 
         double f = model->evaluate();
 
-        this->k.value = vb->k;
-        this->a_min.value = vb->a_min;
-        this->l_inf.value = vb->l_inf;
+        this->k.value = model->vb->k;
+        this->a_min.value = model->vb->a_min;
+        this->l_inf.value = model->vb->l_inf;
 
 
     }

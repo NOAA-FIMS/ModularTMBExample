@@ -11,6 +11,7 @@ bool CreateModel(){
        i++) {
     RcppInterfaceBase::interface_objects[i]->prepare();
   }
+  return true;
 }
 
 /**
