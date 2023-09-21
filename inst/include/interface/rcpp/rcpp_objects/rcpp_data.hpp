@@ -49,17 +49,19 @@ public:
     bool prepare_local() {
 
         std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
-        //std::shared_ptr< ObsData<Type> > obsdata;
-        //obsdata = std::make_shared<ObsData<Type> >();
+        std::shared_ptr< ObsData<Type> > obsdata = 
+            std::make_shared<ObsData<Type> >();
         
-        model->obsdata->ages.resize(this->ages.size());
-        model->obsdata->data.resize(this->data.size());
+        obsdata->ages.resize(this->ages.size());
+        obsdata->data.resize(this->data.size());
+        model->predicted.resize(this->data.size());
         
         for(int i =0; i < this->data.size(); i++){
-            model->obsdata->ages[i] = this->ages[i];
-            model->obsdata->data[i] = this->data[i];
+            obsdata->ages[i] = this->ages[i];
+            obsdata->data[i] = this->data[i];
         }
-        model->predicted.resize(this->data.size());
+
+        model->obsdata = obsdata;
      
         return true;
     }

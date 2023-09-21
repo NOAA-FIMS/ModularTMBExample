@@ -53,45 +53,47 @@ public:
     bool prepare_local() {
 
         std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
-        //std::shared_ptr< VonBertalanffy<Type> > vb;
-        //vb = std::make_shared<VonBertalanffy<Type> >();
+        std::shared_ptr< VonBertalanffy<Type> > vb = 
+            std::make_shared<VonBertalanffy<Type> >();
 
 
         //initialize k
-        model->vb->k = this->k.value;
+        vb->k = this->k.value;
 
         //initialize l_inf
-        model->vb->l_inf = this->l_inf.value;
+        vb->l_inf = this->l_inf.value;
 
         //initialize a_min
-        model->vb->a_min = this->a_min.value;
+        vb->a_min = this->a_min.value;
 
         //initialize alpha
-        model->vb->alpha = this->alpha.value;
+        vb->alpha = this->alpha.value;
 
         //initialize beta
-        model->vb->beta = this->beta.value;
+        vb->beta = this->beta.value;
 
 
         if (this->k.estimable) {
-            model->parameters.push_back(&(model->vb)->k);
+            model->parameters.push_back(&(vb)->k);
         }
 
         if (this->l_inf.estimable) {
-            model->parameters.push_back(&(model->vb)->l_inf);
+            model->parameters.push_back(&(vb)->l_inf);
         }
 
         if (this->a_min.estimable) {
-            model->parameters.push_back(&(model->vb)->a_min);
+            model->parameters.push_back(&(vb)->a_min);
         }
 
         if (this->alpha.estimable) {
-            model->parameters.push_back(&(model->vb)->alpha);
+            model->parameters.push_back(&(vb)->alpha);
         }
 
         if (this->beta.estimable) {
-            model->parameters.push_back(&(model->vb)->beta);
+            model->parameters.push_back(&(vb)->beta);
         }
+
+        model->vb = vb;
         return true;
         
     }
