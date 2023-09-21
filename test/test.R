@@ -56,8 +56,6 @@ parameters <- list(
   p = g$get_parameter_vector()
 )
 
-#gradients aren't accessible when using TMBad:
-#make the AD function in TMB
 obj <- MakeADFun(data, parameters, DLL="ModularTMBExample")
 newtonOption(obj, smartsearch=FALSE)
 
