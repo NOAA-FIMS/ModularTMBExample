@@ -12,25 +12,21 @@ class Model{
     public:
 
     std::vector<Type> predicted;
-    std::shared_ptr< VonBertalanffy<Type> > vb;
-    std::shared_ptr< ObsData<Type> > obsdata;
+    VonBertalanffy<Type>* vb = new VonBertalanffy<Type>;
+    ObsData<Type>* obsdata = new ObsData<Type>;
 
     std::vector<Type*> parameters;
-
-    Model(){
-        this->vb = std::make_shared<VonBertalanffy<Type> >();
-        this->obsdata = std::make_shared<ObsData<Type> >();
-    }
-
+    
+    Model(){}
 
     //singleton instance based on Type
-  static std::shared_ptr<Model<Type> > instance;
+  static Model<Type>* instance;
   
   /**
    * Returns the sigleton instance of VonBertalanffyModel
    * of type Type.
    */
-  static std::shared_ptr<Model<Type> > getInstance(){
+  static Model<Type>* getInstance(){
     return Model<Type>::instance; //TODO: make sure not null and create if null
   }
 
@@ -58,6 +54,5 @@ class Model{
   };
 
 template<typename Type>
-std::shared_ptr<Model<Type> > Model<Type>::instance = std::make_shared<Model<Type> >();
-
+Model<Type>* Model<Type>::instance = new Model<Type>();
 #endif

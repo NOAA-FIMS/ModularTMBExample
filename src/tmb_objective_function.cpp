@@ -28,8 +28,7 @@ template<typename Type>
 Type objective_function<Type>::operator()(){
     
     //get the singleton instance for type Type
-   std::shared_ptr< Model<Type> > model =
-    Model<Type>::getInstance();
+   Model<Type>* model = Model<Type>::getInstance();
     
     //get the parameter values
     PARAMETER_VECTOR(p)

@@ -53,12 +53,12 @@ RCPP_MODULE(growth) {
     .field("estimable",&Variable::estimable);
     Rcpp::class_<ObsDataInterface>("ObsData")
     .constructor()
-    .method("finalize", &ObsDataInterface::finalize)
+    //.method("finalize", &ObsDataInterface::finalize)
     .field("Data", &ObsDataInterface::data)
     .field("ages", &ObsDataInterface::ages);
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
     .constructor()
-    .method("finalize", &vonBertalanffyInterface::finalize)
+    //.method("finalize", &vonBertalanffyInterface::finalize)
     .field("k", &vonBertalanffyInterface::k)
     .field("l_inf", &vonBertalanffyInterface::l_inf)
     .field("a_min", &vonBertalanffyInterface::a_min)

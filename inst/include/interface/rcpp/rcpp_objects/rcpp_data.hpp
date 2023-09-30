@@ -47,10 +47,10 @@ public:
 
     template<typename Type>
     bool prepare_local() {
-
-        std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
-        std::shared_ptr< ObsData<Type> > obsdata = 
-            std::make_shared<ObsData<Type> >();
+        Model<Type>* model = Model<Type>::getInstance();
+        ObsData<Type>* obsdata = new ObsData<Type>;
+        //Rcpp::XPtr< Model<Type> > model_ptr(model, true);
+       // Rcpp::XPtr< ObsData<Type> > obsdata_ptr(obsdata, true);
         
         obsdata->ages.resize(this->ages.size());
         obsdata->data.resize(this->data.size());
@@ -94,8 +94,10 @@ public:
      * Update the model parameter values and finalize. Sets the parameter values and evaluates the
      * portable model once and transfers values back to the Rcpp interface.
      */
+    /*
     void finalize(Rcpp::NumericVector v) {
-        std::shared_ptr< Model<double> > model = Model<double>::getInstance();
+        Model<double>* model = Model<double>::getInstance();
+        Rcpp::XPtr< Model<double> > model_ptr(model, true);
 
         if (this->data.size() != this->ages.size()) {
             Rcpp::stop("finalize: ages vector length not equal to data vector length");
@@ -103,10 +105,10 @@ public:
 
         
         for (int i = 0; i < this->predicted.size(); i++) {
-            this->predicted[i] = model->predicted[i];
+            this->predicted[i] = model_ptr->predicted[i];
         }
     }
-
+*/
      /**
      * Print model values.
      */

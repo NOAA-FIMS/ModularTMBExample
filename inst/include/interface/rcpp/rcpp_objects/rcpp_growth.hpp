@@ -51,10 +51,10 @@ public:
 
     template<typename Type>
     bool prepare_local() {
-
-        std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
-        std::shared_ptr< VonBertalanffy<Type> > vb = 
-            std::make_shared<VonBertalanffy<Type> >();
+        Model<Type>* model = Model<Type>::getInstance();
+        VonBertalanffy<Type>* vb = new VonBertalanffy<Type>;
+        //Rcpp::XPtr< Model<Type> > model_ptr(model, true);
+        //Rcpp::XPtr< VonBertalanffy<Type> > vb_ptr(vb, true);
 
 
         //initialize k
@@ -118,28 +118,32 @@ public:
      * Update the model parameter values and finalize. Sets the parameter values and evaluates the
      * portable model once and transfers values back to the Rcpp interface.
      */
+    /*
+    template<typename Type>
     void finalize(Rcpp::NumericVector v) {
-        std::shared_ptr< Model<double> > model = Model<double>::getInstance();
+        Model<double>* model = Model<double>::getInstance();
+        Rcpp::XPtr< Model<double> > model_ptr(model, true);
         //std::shared_ptr< VonBertalanffy<double> > vb;
         //vb = std::make_shared<VonBertalanffy<double> >();
 
 
         for (int i = 0; i < v.size(); i++) {
-            (*model->parameters[i]) = v[i];
+            (*model_ptr->parameters[i]) = v[i];
         }
 
-        double f = model->evaluate();
+        double f = model_ptr->evaluate();
 
-        this->k.value = model->vb->k;
-        this->a_min.value = model->vb->a_min;
-        this->l_inf.value = model->vb->l_inf;
+        this->k.value = model_ptr->vb->k;
+        this->a_min.value = model_ptr->vb->a_min;
+        this->l_inf.value = model_ptr->vb->l_inf;
 
 
     }
-
+*/
     /**
      * Print model values.
      */
+    
     void show_() {
         Rcpp::Rcout << "vonBertalanffy:\n";
         Rcpp::Rcout << "k = " << this->k.value << "\n";
