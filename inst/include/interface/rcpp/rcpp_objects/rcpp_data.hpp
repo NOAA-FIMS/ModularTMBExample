@@ -3,6 +3,7 @@
 
 
 #include "rcpp_interface_base.hpp"
+#include "../../../common/model.hpp"
 
 /**
  * @brief Rcpp interface for Data as an S4 object. To instantiate
@@ -44,13 +45,15 @@ public:
     ObsDataInterface() : DataInterfaceBase() {}
     
     virtual ~ObsDataInterface() {}
-
+    
+   
+    
     template<typename Type>
     bool prepare_local() {
         Model<Type>* model = Model<Type>::getInstance();
-        ObsData<Type>* obsdata = new ObsData<Type>;
+        ObsData<Type>* obsdata = ObsData<Type>::obsdata_new();
         //Rcpp::XPtr< Model<Type> > model_ptr(model, true);
-       // Rcpp::XPtr< ObsData<Type> > obsdata_ptr(obsdata, true);
+        //Rcpp::XPtr< ObsData<Type> > obsdata_ptr(obsdata, true);
         
         obsdata->ages.resize(this->ages.size());
         obsdata->data.resize(this->data.size());

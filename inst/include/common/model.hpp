@@ -2,7 +2,7 @@
 #ifndef MODEL_HPP
 #define MODEL_HPP
 
-#include "def.hpp"
+//#include "def.hpp"
 
 #include "../pop_dy/von_bertalanffy.hpp"
 #include "../common/data.hpp"

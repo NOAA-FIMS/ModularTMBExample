@@ -5,11 +5,6 @@
 
 
 
-#define RCPP_NO_SUGAR
-#include <Rcpp.h>
-
-
-
 /**
  * Rcpp representation of a variable
  * interface between R and cpp.

@@ -4,6 +4,7 @@
 #include <vector>
 
 //#include "../interface/interface.hpp"
+#include "../common/def.hpp"
 
 /**
  * Portable von Bertalanffy model. Can be used in multiple

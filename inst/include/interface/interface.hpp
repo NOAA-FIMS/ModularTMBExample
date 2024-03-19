@@ -6,8 +6,6 @@
  */
 
 
-#define TMB_MODEL
-
 
 
 

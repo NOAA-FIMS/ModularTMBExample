@@ -13,6 +13,11 @@
 #ifndef DEF_HPP
 #define DEF_HPP
 
+
+#define RCPP_NO_SUGAR
+#include <Rcpp.h>
+
+
 #define TMB_MODEL
 
 

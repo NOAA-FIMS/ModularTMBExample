@@ -4,7 +4,6 @@
 
 #include "../../../common/model.hpp"
 #include "rcpp_interface_base.hpp"
-#include "../../../pop_dy/von_bertalanffy.hpp"
 
 /****************************************************************
  * Growth Rcpp interface                                   *
