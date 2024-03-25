@@ -44,16 +44,33 @@ Pop <- new(g$Population)
 #set ages 
 Pop$ages<-ages
 
-NormNLL <- new(g$NormalNLL)
-NormNLL$x <- data
-NormNLL$log_sd <- 0
-NormNLL$estimate_log_sd <- TRUE
-NormNLL$SetMu(2, "growth", parent.frame())
+DataNLL <- new(g$NormalNLL)
+DataNLL$x <- data
+DataNLL$log_sd <- 0
+DataNLL$estimate_log_sd <- TRUE
+DataNLL$SetMu(Pop$get_id(), "growth")
 
-g$assign_variable(Pop$get_id(), "growth")
+#Set up prior on K based on fish life value - Normal example
+# this was a long install with a lot of dependencies, pulling out parameter values to avoid this for testing
+# remotes::install_github("James-Thorson-NOAA/FishLife")
 
-#module, observed, expected, nll
-SetNLL(vonB, data, vonB$evaluate, )
+# library(FishLife)
+# library(mvtnorm)
+# params <- matrix(c('Loo', 'K'), ncol=2)
+# x <- Search_species(Genus="Hippoglossoides")$match_taxonomy
+# y <- Plot_taxa(x, params=params)
+
+## multivariate normal in log space for two growth parameters
+mu <- c(Loo = 3.848605, K = -1.984452) #y[[1]]$Mean_pred[params]
+Sigma <- rbind(c( 0.1545170, -0.1147763),
+               c( -0.1147763,  0.1579867)) #y[[1]]$Cov_pred[params, params]
+row.names(Sigma) <- c('Loo', 'K')
+colnames(Sigma) <- c('Loo', 'K')
+
+GrowthKPrior <- new(g$NormalNLL)
+GrowthKPrior$mu <- mu[2]
+GrowthKPrior$log_sd <- log(Sigma[2,2])
+GrowthKPrior$SetX(vonB$get_id(), "k")
 
 #prepare for interfacing with TMB
 g$CreateModel()

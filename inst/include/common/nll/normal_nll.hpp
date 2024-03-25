@@ -13,10 +13,12 @@ struct NormalNLL : public NLLBase<Type> {
     //      dnorm(fims::Vector<Type> x, Type eta, Type sd)
     //      dnorm(fims::Vector<Type> x, fims::Vector<Type> eta, Type sd)
     //      dnorm(fims::Vector<Type> x, fims::Vector<Type> eta, fims::Vector<Type> sd)
-    vector<Type> x;
-    vector<Type> mu;
-    vector<Type> log_sd;
+    fims::Vector<Type> x;
+    fims::Vector<Type> mu;
+    fims::Vector<Type> log_sd;
     fims::Vector<Type> log_sd_vec;
+    fims::Vector<Type> eta;
+    fims::Vector<Type> sd;
     Type nll = 0.0;
     bool osa_flag;
     bool simulate_prior_flag;
@@ -30,15 +32,15 @@ struct NormalNLL : public NLLBase<Type> {
     virtual ~NormalNLL() {}
 
     virtual const Type evaluate(){
-        vector<Type> eta(x.size());
-        vector<Type> sd(x.size());
+        eta.resize(this->x.size());
+        sd.resize(this->x.size());
         if(mu.size() == 1){
-            eta.fill(mu(0));
+            std::fill(eta.begin(), eta.end(), mu[0]);
         } else {
             eta = mu;
         }
         if(log_sd.size() == 1){
-            sd.fill(exp(log_sd(0)));
+            std::fill(log_sd.begin(), log_sd.end(), exp(log_sd[0]));
         } else {
             sd = exp(log_sd);
         }
@@ -50,6 +52,7 @@ struct NormalNLL : public NLLBase<Type> {
                 nll -= keep.cdf_upper[i] * log( 1.0 - pnorm(x[i], eta[i], sd[i]) );
             }
         }
+  /* not working yet      
         if(simulate_prior_flag){
             SIMULATE_F(of){
                 x = rnorm(eta, sd);
@@ -62,7 +65,7 @@ struct NormalNLL : public NLLBase<Type> {
             }
             REPORT_F(x, of);
         }
-    }
+    } */
 /*
     virtual const Type evaluate(){
         Type sd = exp(log_sd);

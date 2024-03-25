@@ -13,23 +13,25 @@ template<typename Type>
 class Model{
     public:
 
-    std::shared_ptr< Population<Type> > pop;
+    //singleton instance based on Type
+    static std::shared_ptr<Model<Type> > instance;
+
     std::map<uint32_t, std::shared_ptr<NormalNLL<Type> > >
       normal;
     typedef typename std::map<
       uint32_t, std::shared_ptr<NormalNLL<Type> > >::iterator
       normal_iterator;
 
+    std::shared_ptr<Population<Type> >  pop;
+
     std::vector<Type*> parameters;
 
+  
     Model(){
       this->pop = std::make_shared<Population<Type> >();
-    }
+    } 
 
-
-    //singleton instance based on Type
-  static std::shared_ptr<Model<Type> > instance;
-  
+ 
   /**
    * Returns the sigleton instance of VonBertalanffyModel
    * of type Type.
@@ -42,7 +44,7 @@ class Model{
    * Objective function to compute least squares
    * of observed and predicted length.
    */
-  Type evaluate(){
+  const Type evaluate(){
     pop ->evaluate();
     Type jnll = 0.0;
     for(normal_iterator it = this->normal.begin(); it!= this->normal.end(); ++it){

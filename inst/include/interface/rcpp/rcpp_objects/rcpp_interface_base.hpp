@@ -50,7 +50,7 @@ class RcppInterfaceBase {
   }
 
   
-  void assign_variable(size_t id, std::string name){
+  fims::Vector<double> assign_variable(size_t id, std::string name){
 
       std::map<uint32_t, std::shared_ptr<Population<double> > >
               pop; /**<hash map to link each object to its shared location in memory*/

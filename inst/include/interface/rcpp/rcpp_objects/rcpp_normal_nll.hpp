@@ -40,6 +40,8 @@ std::map<uint32_t, UnivariateNLLInterface*> UnivariateNLLInterface::univariate_n
 class NormalNLLInterface : public UnivariateNLLInterface{
 
 public:
+     std::shared_ptr<NormalNLL<double> > norm =
+        std::make_shared<NormalNLL<double> >();
     Rcpp::NumericVector x;
     Rcpp::NumericVector mu;
     Rcpp::NumericVector log_sd;
@@ -52,24 +54,21 @@ public:
     
     virtual ~NormalNLLInterface() {}
 
-//Here mu is a vector, but does it need to be a pointer for this to work??
     void SetX(size_t id, std::string name){
-        this -> x = assign_variable(id, name)
+        //how do I set the id?
+        norm -> x = assign_variable(id, name);
     }
     void SetMu(size_t id, std::string name){
-        this -> mu = assign_variable(id, name)
+        //how do I set the id?
+        norm -> mu = assign_variable(id, name);
     }
 
     template<typename Type>
     bool prepare_local() {
 
         std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
-        std::shared_ptr< NormalNLL<Type> > normal = 
-            std::make_shared<NormalNLL<Type> >();
-        
-
-
-        //initialize x and mu
+   
+        //initialize x and mu : how do I differentiate this from the SetX and SetMu functions above? flags?
         for(size_t i=0; i<this->x.size(); i++){
             normal->x[i] = this->x[i];
         }
