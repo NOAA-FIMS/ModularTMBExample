@@ -19,6 +19,7 @@ class GrowthInterfaceBase : public RcppInterfaceBase {
 public:
   static uint32_t id_g; /**< static id of the GrowthInterfaceBase object */
 uint32_t id;          /**< local id of the GrowthInterfaceBase object */
+uint32_t module_id; /**< local id of the RcppInterfaceBase object*/
 static std::map<uint32_t, GrowthInterfaceBase*> growth_objects; /**<
  map relating the ID of the GrowthInterfaceBase to the GrowthInterfaceBase
  objects */
@@ -27,6 +28,7 @@ GrowthInterfaceBase() {
   this->id = GrowthInterfaceBase::id_g++;
   GrowthInterfaceBase::growth_objects[this->id] = this;
   RcppInterfaceBase::interface_objects.push_back(this);
+  this->module_id = RcppInterfaceBase::module_id_g;
 }
 
 virtual ~GrowthInterfaceBase() {}
@@ -49,12 +51,17 @@ public:
     
     virtual ~vonBertalanffyInterface() {}
 
+    /** @brief returns the id for the logistic selectivity interface */
+    virtual uint32_t get_module_id() { return this->module_id; }
+
     template<typename Type>
     bool prepare_local() {
 
         std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
         std::shared_ptr< VonBertalanffy<Type> > vb = 
             std::make_shared<VonBertalanffy<Type> >();
+        std::shared_ptr< Population<Type> > pop = 
+            std::make_shared<Population<Type> >();
 
 
         //initialize k
@@ -93,7 +100,7 @@ public:
             model->parameters.push_back(&(vb)->beta);
         }
 
-        model->vb = vb;
+        pop->vb = vb;
         return true;
         
     }
@@ -114,38 +121,6 @@ public:
 
     }
 
-    /**
-     * Update the model parameter values and finalize. Sets the parameter values and evaluates the
-     * portable model once and transfers values back to the Rcpp interface.
-     */
-    void finalize(Rcpp::NumericVector v) {
-        std::shared_ptr< Model<double> > model = Model<double>::getInstance();
-        //std::shared_ptr< VonBertalanffy<double> > vb;
-        //vb = std::make_shared<VonBertalanffy<double> >();
-
-
-        for (int i = 0; i < v.size(); i++) {
-            (*model->parameters[i]) = v[i];
-        }
-
-        double f = model->evaluate();
-
-        this->k.value = model->vb->k;
-        this->a_min.value = model->vb->a_min;
-        this->l_inf.value = model->vb->l_inf;
-
-
-    }
-
-    /**
-     * Print model values.
-     */
-    void show_() {
-        Rcpp::Rcout << "vonBertalanffy:\n";
-        Rcpp::Rcout << "k = " << this->k.value << "\n";
-        Rcpp::Rcout << "a_min = " << this->a_min.value << "\n";
-        Rcpp::Rcout << "l_inf = " << this->l_inf.value << "\n";
-    }
 
 };
 

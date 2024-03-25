@@ -3,7 +3,8 @@
 
 library(TMB)
 library(Rcpp)
-library(ModularTMBExample)
+#library(ModularTMBExample)
+devtools::load_all()
 
 #get the Rcpp module
 g<-Rcpp::Module(module = "growth",PACKAGE = "ModularTMBExample")
@@ -39,11 +40,20 @@ vonB$l_inf$value<-7
 vonB$l_inf$estimable<-TRUE
 
 #set data
-Dat <- new(g$ObsData) 
-Dat$Data <- data
-
+Pop <- new(g$Population) 
 #set ages 
-Dat$ages<-ages
+Pop$ages<-ages
+
+NormNLL <- new(g$NormalNLL)
+NormNLL$x <- data
+NormNLL$log_sd <- 0
+NormNLL$estimate_log_sd <- TRUE
+NormNLL$SetMu(2, "growth", parent.frame())
+
+g$assign_variable(Pop$get_id(), "growth")
+
+#module, observed, expected, nll
+SetNLL(vonB, data, vonB$evaluate, )
 
 #prepare for interfacing with TMB
 g$CreateModel()

@@ -35,15 +35,56 @@ class RcppInterfaceBase {
  public:
   /**< FIMS interface object vectors */
   static std::vector<RcppInterfaceBase *> interface_objects;
+  static uint32_t module_id_g; /**< static id of the RcppInterfaceBase object */
+  uint32_t module_id;          /**< local id of the RcppInterfaceBase object */
+
+  RcppInterfaceBase(){
+    this->module_id = RcppInterfaceBase::module_id_g++;
+  }
+
+  virtual ~RcppInterfaceBase() {}
 
   /** @brief virtual method to inherit to add objects to the TMB model */
   virtual bool prepare() {
     return false;
   }
+
+  
+  void assign_variable(size_t id, std::string name){
+
+      std::map<uint32_t, std::shared_ptr<Population<double> > >
+              pop; /**<hash map to link each object to its shared location in memory*/
+      typedef typename std::map<
+              uint32_t, std::shared_ptr<Population<double> > >::iterator
+              pops_it; /**< iterator for population objects>*/
+      std::map<uint32_t, std::shared_ptr<VonBertalanffy<double> > >
+              vb; /**<hash map to link each object to its shared location in memory*/
+      typedef typename std::map<
+              uint32_t, std::shared_ptr<VonBertalanffy<double> > >::iterator
+              vb_it; /**< iterator for population objects>*/
+      pops_it it_pop = pop.find(id);
+      vb_it it_vb = vb.find(id);
+      std::shared_ptr<Population<double> > ptr_pop = (*it_pop).second;
+      std::shared_ptr<VonBertalanffy<double> > ptr_vb = (*it_vb).second;
+    
+    //Rcout << ptr_pop->growth[0] << std::endl;
+
+      std::unordered_map<std::string, fims::Vector<double>> variable_map = {
+        {"growth", ptr_pop->growth},
+        {"k", ptr_vb->k},
+        {"l_inf", ptr_vb->l_inf}
+      };
+
+      return variable_map[name];
+  
+  }
+
 };
 std::vector<RcppInterfaceBase *>
     RcppInterfaceBase::interface_objects;
 std::vector<Variable*> Variable::parameters;
 std::vector<Variable*> Variable::estimated_parameters;
+
+uint32_t RcppInterfaceBase::module_id_g = 0;
 
 #endif

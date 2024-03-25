@@ -5,21 +5,25 @@
 #include "def.hpp"
 
 #include "../pop_dy/von_bertalanffy.hpp"
-#include "../common/data.hpp"
+#include "../pop_dy/population.hpp"
+#include "../common/nll/normal_nll.hpp"
+#include "../common/nll/nll_base.hpp"
 
 template<typename Type>
 class Model{
     public:
 
-    std::vector<Type> predicted;
-    std::shared_ptr< VonBertalanffy<Type> > vb;
-    std::shared_ptr< ObsData<Type> > obsdata;
+    std::shared_ptr< Population<Type> > pop;
+    std::map<uint32_t, std::shared_ptr<NormalNLL<Type> > >
+      normal;
+    typedef typename std::map<
+      uint32_t, std::shared_ptr<NormalNLL<Type> > >::iterator
+      normal_iterator;
 
     std::vector<Type*> parameters;
 
     Model(){
-        this->vb = std::make_shared<VonBertalanffy<Type> >();
-        this->obsdata = std::make_shared<ObsData<Type> >();
+      this->pop = std::make_shared<Population<Type> >();
     }
 
 
@@ -39,6 +43,14 @@ class Model{
    * of observed and predicted length.
    */
   Type evaluate(){
+    pop ->evaluate();
+    Type jnll = 0.0;
+    for(normal_iterator it = this->normal.begin(); it!= this->normal.end(); ++it){
+      std::shared_ptr<NormalNLL<Type> > n = (*it).second;
+      jnll += n->evaluate();
+    }
+    return jnll;
+    /*
     Type norm2 = 0.0;
     for(int i =0; i < obsdata -> ages.size(); i++){
         Type pred = vb -> evaluate(obsdata -> ages[i]);
@@ -46,6 +58,7 @@ class Model{
         norm2+=(pred-obsdata -> data[i])*(pred-obsdata -> data[i]);
     }
     return norm2;
+    */
   }
   
   /**
