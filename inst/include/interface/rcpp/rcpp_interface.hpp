@@ -11,6 +11,7 @@ bool CreateModel(){
   for (size_t i = 0; i < RcppInterfaceBase::interface_objects.size();
        i++) {
     RcppInterfaceBase::interface_objects[i]->prepare();
+    Rcout << "prepare model " << i << std::endl;
   }
   return true;
 }
@@ -34,20 +35,28 @@ RCPP_EXPOSED_CLASS(PopulationInterface)
  */
 Rcpp::NumericVector get_parameter_vector(){
     Rcpp::NumericVector p;
-    
+/*
+    std::shared_ptr<Model<double>> model = Model<double>::getInstance();
+    for(int i=0; i<model->parameters.size();i++){
+        p.push_back(*model->parameters[i]);
+    }
+  */  
     for(int i =0; i < Variable::parameters.size(); i++){
         if(Variable::parameters[i]->estimable){
             Variable::estimated_parameters.push_back(Variable::parameters[i]);
             p.push_back(Variable::parameters[i]->value);
         }
     }
+    
     return p;
 }
 /**
  * Clears the vector of independent variables.
  */
 void clear(){
-    Variable::parameters.clear();
+    std::shared_ptr<Model<double>> model = Model<double>::getInstance();
+    model->parameters.clear();
+    //Variable::parameters.clear();
 }
 
 /**
@@ -60,7 +69,6 @@ RCPP_MODULE(growth) {
     .field("estimable",&Variable::estimable);
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
     .constructor()
-    .method("get_module_id", &vonBertalanffyInterface::get_module_id)
     .field("k", &vonBertalanffyInterface::k)
     .field("l_inf", &vonBertalanffyInterface::l_inf)
     .field("a_min", &vonBertalanffyInterface::a_min)
@@ -77,8 +85,9 @@ RCPP_MODULE(growth) {
     .field("estimate_x", &NormalNLLInterface::estimate_x)
     .field("estimate_mu", &NormalNLLInterface::estimate_mu)
     .field("estimate_log_sd", &NormalNLLInterface::estimate_log_sd)
-    .method("SetMu", &NormalNLLInterface::SetX)
-    .method("SetMu", &NormalNLLInterface::SetMu);
+    .field("nll_type", &NormalNLLInterface::nll_type);
+    //.method("SetMu", &NormalNLLInterface::SetX)
+    //.method("SetMu", &NormalNLLInterface::SetMu);
     Rcpp::class_<PopulationInterface>("Population")
     .constructor()
     .field("ages", &PopulationInterface::ages)

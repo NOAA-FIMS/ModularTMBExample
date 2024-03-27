@@ -35,12 +35,8 @@ class RcppInterfaceBase {
  public:
   /**< FIMS interface object vectors */
   static std::vector<RcppInterfaceBase *> interface_objects;
-  static uint32_t module_id_g; /**< static id of the RcppInterfaceBase object */
-  uint32_t module_id;          /**< local id of the RcppInterfaceBase object */
-
-  RcppInterfaceBase(){
-    this->module_id = RcppInterfaceBase::module_id_g++;
-  }
+  
+  RcppInterfaceBase(){ }
 
   virtual ~RcppInterfaceBase() {}
 
@@ -50,7 +46,7 @@ class RcppInterfaceBase {
   }
 
   
-  fims::Vector<double> assign_variable(size_t id, std::string name){
+  typename model_traits<double>::data_vector assign_variable(size_t id, std::string name){
 
       std::map<uint32_t, std::shared_ptr<Population<double> > >
               pop; /**<hash map to link each object to its shared location in memory*/
@@ -69,8 +65,8 @@ class RcppInterfaceBase {
     
     //Rcout << ptr_pop->growth[0] << std::endl;
 
-      std::unordered_map<std::string, fims::Vector<double>> variable_map = {
-        {"growth", ptr_pop->growth},
+      std::unordered_map<std::string, typename model_traits<double>::data_vector> variable_map = {
+        {"growth", ptr_pop->length},
         {"k", ptr_vb->k},
         {"l_inf", ptr_vb->l_inf}
       };
@@ -84,7 +80,5 @@ std::vector<RcppInterfaceBase *>
     RcppInterfaceBase::interface_objects;
 std::vector<Variable*> Variable::parameters;
 std::vector<Variable*> Variable::estimated_parameters;
-
-uint32_t RcppInterfaceBase::module_id_g = 0;
 
 #endif

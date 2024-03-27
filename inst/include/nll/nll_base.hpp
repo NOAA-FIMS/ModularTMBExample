@@ -1,13 +1,13 @@
 #ifndef NLL_BASE_HPP
 #define NLL_BASE_HPP
 
-#include "../def.hpp"
+#include "../common/def.hpp"
+#include "../common/model_object.hpp"
 
 template <typename Type>
-struct NLLBase {
+struct NLLBase : public ModelObject<Type> {
 
 static uint32_t id_g; /**< The ID of the instance of the NLLBase class */
-static uint32_t id; /**< The local ID of the instance of the NLLBase class */
 
   /** @brief Constructor.
    */

@@ -1,8 +1,6 @@
 #ifndef FIMS_VECTOR_HPP
 #define FIMS_VECTOR_HPP
 
-#include "../interface/interface.hpp"
-
 namespace fims {
 
 /**

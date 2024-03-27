@@ -11,7 +11,6 @@
 
 
 #include "../inst/include/interface/rcpp/rcpp_interface.hpp"
-#include "../inst/include/interface/interface.hpp"
 #include "init.hpp"
 #include "../inst/include/common/model.hpp"
 
@@ -39,8 +38,12 @@ Type objective_function<Type>::operator()(){
         *model->parameters[i] = p[i];
     }
     
+    Type nll = model->evaluate();
+
+    REPORT(nll);
+    REPORT(p);
     //evaluate the model objective function value
-    return model->evaluate();
+    return nll;
 }
 
 
