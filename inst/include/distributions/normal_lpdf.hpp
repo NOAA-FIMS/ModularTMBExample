@@ -47,10 +47,13 @@ struct NormalLPDF : public DensityComponentBase<Type> {
         this->log_likelihood_vec.resize(this->observed_value.size());
         Type cdf;
         for(int i=0; i<this->observed_value.size(); i++){
+          if(osa_flag){
             this->log_likelihood_vec[i] = this->keep[i] * dnorm(this->observed_value[i], mu[i], sd[i], true);
-            //this->log_likelihood_vec[i] = dnorm(this->observed_value[i], mu[i], sd[i], true);
-            log_likelihood += this->log_likelihood_vec[i];
-            #ifdef TMB_MODEL
+          } else {
+            this->log_likelihood_vec[i] = dnorm(this->observed_value[i], mu[i], sd[i], true);
+          }
+          log_likelihood += this->log_likelihood_vec[i];
+          #ifdef TMB_MODEL
             if(this->simulate_flag){
                 SIMULATE_F(this->of){
                     this->observed_value[i] = rnorm(mu[i], sd[i]);
@@ -64,7 +67,7 @@ struct NormalLPDF : public DensityComponentBase<Type> {
                 this->log_likelihood_vec[i] = this->keep.cdf_lower[i] * log( squeeze(cdf) );
                 this->log_likelihood_vec[i] = this->keep.cdf_upper[i] * log( 1.0 - squeeze(cdf) );
             }
-            #endif
+          #endif
            
             
         }
