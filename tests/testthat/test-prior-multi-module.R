@@ -180,7 +180,7 @@ expect_equal(l_inf[1] > bayes.pi[2,1] & l_inf[1] < bayes.pi[2,2], TRUE)
 #expect_equal(log(.1) > bayes.pi[5,1] & log(.1) < bayes.pi[5,2], TRUE)
 expect_equal(log(.1) > bayes.pi[6,1] & log(.1) < bayes.pi[6,2], TRUE)
 
-
+)}
 clear()
 
 
