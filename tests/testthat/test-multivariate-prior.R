@@ -1,33 +1,29 @@
 test_that("test multivariate prior", {
 
-
-  
-skip("skip multivariate prior test")  
-  
 # #Get parameters from FishLife
 # #install FishLife using: remotes::install_github("James-Thorson-NOAA/FishLife") 
 # library(FishLife)
 # params <- matrix(c('Loo', 'K'), ncol=2)
 # x <- Search_species(Genus="Hippoglossoides")$match_taxonomy
 # y <- Plot_taxa(x, params=params)
-library(mvtnorm)
 
 # multivariate normal in log space for two growth parameters
-mu <- c(Linf = 3.848605, K = -1.984452) #y[[1]]$Mean_pred[params]
-Sigma <- rbind(c( 0.1545170, -0.1147763),
-               c( -0.1147763,  0.1579867)) #y[[1]]$Cov_pred[params, params]
-row.names(Sigma) <- c('Linf', 'K')
-colnames(Sigma) <- c('Linf', 'K')
+#parameter order must match order in growth module
+mu <- c(K = -1.984452, Linf = 3.848605) #y[[1]]$Mean_pred[params]
+Sigma <- rbind(c( 0.1579867, -0.1147763),
+               c( -0.1147763,  0.1545170)) #y[[1]]$Cov_pred[params, params]
+row.names(Sigma) <- c('K', 'Linf')
+colnames(Sigma) <- c('K', 'Linf')
 
 
 #simulate data
 set.seed(123)
 sim.parms <- mvtnorm::rmvnorm(1, mu, Sigma)
-l_inf<- sim.parms[1]
+l_inf<- sim.parms[2]
 a_min<- 0.1
-#k parameter is in logspace and needs to be transformed
-k<- exp(sim.parms[2])
-ages<-c(a_min, 1,2,3,4,5,6,7,8)
+k<- exp(sim.parms[1])
+  
+ages<-c(a_min, 1,2,3,4,5,6,7,8,9,10)
 Length<-replicate(length(ages), 0.0)
 
 for(i in seq_along(ages)){
@@ -67,7 +63,7 @@ DataLL <- new(NormalLPDF)
 DataLL$observed_value <- new(VariableVector, length.data, length(length.data))
 #initialize log_sd
 DataLL$log_sd <- new(VariableVector, 1)
-DataLL$log_sd[1]$value <- -1
+DataLL$log_sd[1]$value <- -2
 DataLL$log_sd[1]$estimable <- TRUE
 DataLL$input_type <- "data"
 #link data log-likelihood to length from Pop
@@ -75,14 +71,14 @@ DataLL$set_distribution_links("data", Pop$get_id(), Pop$get_module_name(), "leng
 
 #set up multivariate prior for l_inf and logk
 GrowthMVPrior <- new(MVNormLPDF)
-GrowthMVPrior$expected_value <- new(VariableVector, mu, 1)
+GrowthMVPrior$expected_value <- new(VariableVector, mu, 2)
 GrowthMVPrior$input_type <- "prior"
 phi <- cov2cor(Sigma)[1,2]
 GrowthMVPrior$log_sd <- new(VariableVector, 0.5*log(diag(Sigma)), 2)
 GrowthMVPrior$logit_phi <- new(VariableVector, log((phi+1)/(1-phi)), 1)  
 #link prior log-likelihood to the l_inf and logk parameters from vonB
 GrowthMVPrior$set_distribution_links( "prior", c(vonB$get_id(), vonB$get_id()),
-     c(vonB$get_module_name(),vonB$get_module_name()), c("l_inf", "logk"))
+     c(vonB$get_module_name(),vonB$get_module_name()), c("logk", "l_inf"))
 
 #prepare for interfacing with TMB
 CreateModel()
@@ -114,42 +110,25 @@ for(i in seq_along(mean_sdr)){
   ci[[i]] <- mean_sdr[i] + c(-1, 1) * qnorm(.975) * std_sdr[i]
 }
 
- # expect_equal( log(k) > ci[[1]][1] & log(k) < ci[[1]][2], TRUE)
+  expect_equal( log(k) > ci[[1]][1] & log(k) < ci[[1]][2], TRUE)
   expect_equal( l_inf > ci[[2]][1] & l_inf < ci[[2]][2], TRUE)
- # expect_equal( log(.1) > ci[[3]][1] & log(.1) < ci[[3]][2], TRUE)
-  
-})
+  expect_equal( log(.1) > ci[[3]][1] & log(.1) < ci[[3]][2], TRUE)
 
 
-# DataLL$finalize(opt$par)
-# GrowthMVPrior$finalize(opt$par)
-# DataLL$log_likelihood_vec
-# GrowthMVPrior$log_likelihood_vec
-# sum(DataLL$log_likelihood_vec) + GrowthMVPrior$log_likelihood_vec
-# opt$objective
+
 #Fully Bayesian
-test_that("test_tmbstan", {
-  skip("skip test tmbstan")
-  library(tmbstan)
-  library(shinystan)
-  library(ggplot2)
-  fit <- tmbstan(obj, init = "best.last.par", iter = 4000)
-  pairs(fit, pars=names(obj$par))
-  traceplot(fit, pars=names(obj$par), inc_warmup=TRUE)
-  launch_shinystan(obj)
+fit <- tmbstan::tmbstan(obj, init = "best.last.par", iter = 4000)
+#pairs(fit, pars=names(obj$par))
+#traceplot(fit, pars=names(obj$par), inc_warmup=TRUE)
+postmle <- as.matrix(fit)
+
+bayes.pi <- rstantools::predictive_interval(postmle)
+
+expect_equal(log(k) > bayes.pi[1,1] & log(k) < bayes.pi[1,2], TRUE)
+expect_equal(l_inf > bayes.pi[2,1] & l_inf < bayes.pi[2,2], TRUE)
+#expect_equal(log(.1) > bayes.pi[3,1] & log(.1) < bayes.pi[3,2], TRUE)
 })
 
 clear()
 
 
-# #update the von Bertalanffy object with updated parameters
-# vonB$finalize(rep$par.fixed)
-
-# #show results
-# vonB$show()
-
-# obj$report()
-
-# #show final gradient
-# print("final gradient:")
-# print(rep$gradient.fixed)

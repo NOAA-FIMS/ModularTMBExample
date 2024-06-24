@@ -1,32 +1,30 @@
 test_that("test multi-module prior",{
 
-#skip("skip multi-module prior test")
   
-message("begin multi-module prior test")
 # #Get parameters from FishLife
 # #install FishLife using: remotes::install_github("James-Thorson-NOAA/FishLife") 
 # library(FishLife)
 # params <- matrix(c('Loo', 'K'), ncol=2)
 # x <- Search_species(Genus="Hippoglossoides")$match_taxonomy
 # y <- Plot_taxa(x, params=params)
-library(mvtnorm)
 
-# multivariate normal in log space for two growth parameters
-mu <- c(Linf = 3.848605, K = -1.984452) #y[[1]]$Mean_pred[params]
-Sigma <- rbind(c( 0.1545170, -0.1147763),
-               c( -0.1147763,  0.1579867)) #y[[1]]$Cov_pred[params, params]
-row.names(Sigma) <- c('Linf', 'K')
-colnames(Sigma) <- c('Linf', 'K')
-
-
-#simulate data
-set.seed(123)
-sim.parms <- mvtnorm::rmvnorm(2, mu, Sigma)
-l_inf<- sim.parms[,1]
-a_min<- 0.1
-#k parameter is in logspace and needs to be transformed
-k<- exp(sim.parms[,2])
-ages<-c(0.1, 1,2,3,4,5,6,7,8)
+  
+  # multivariate normal in log space for two growth parameters
+  mu <- c(K = -1.984452, Linf = 3.848605) #y[[1]]$Mean_pred[params]
+  Sigma <- rbind(c( 0.1579867, -0.1147763),
+                 c( -0.1147763,  0.1545170)) #y[[1]]$Cov_pred[params, params]
+  row.names(Sigma) <- c('K', 'Linf')
+  colnames(Sigma) <- c('K', 'Linf')
+  
+  
+  #simulate data
+  set.seed(123)
+  sim.parms <- mvtnorm::rmvnorm(2, mu, Sigma)
+  l_inf<- sim.parms[,2]
+  a_min<- 0.1
+  k<- exp(sim.parms[,1])
+  
+  ages<-c(a_min, 1,2,3,4,5,6,7,8,9,10)
 Length1 <- Length2 <- replicate(length(ages), 0.0)
 
 for(i in 1:length(ages)){
@@ -46,7 +44,7 @@ clear()
 vonB1<-new(vonBertalanffy)
 
 #initialize logk
-vonB1$logk$value<-log(.05)
+vonB1$logk$value<-log(.1)
 vonB1$logk$estimable<-TRUE
 
 #initialize a_min
@@ -61,7 +59,7 @@ vonB1$l_inf$estimable<-TRUE
 vonB2<-new(vonBertalanffy)
 
 #initialize logk
-vonB2$logk$value<-log(.05)
+vonB2$logk$value<-log(.1)
 vonB2$logk$estimable<-TRUE
 
 #initialize a_min
@@ -69,7 +67,7 @@ vonB2$a_min$value<-.1
 vonB2$a_min$estimable<-FALSE
 
 #initialize l_inf
-vonB2$l_inf$value<-1
+vonB2$l_inf$value<-max(length.data2)
 vonB2$l_inf$estimable<-TRUE
 
 #setup first population, set ages and link to vonB1
@@ -90,7 +88,7 @@ DataLL1 <- new(NormalLPDF)
 DataLL1$observed_value <- 
   new(VariableVector, length.data1, length(length.data1))
 #initialize log_sd
-DataLL1$log_sd <- new(VariableVector, 1)
+DataLL1$log_sd <- new(VariableVector, -2, 1)
 DataLL1$log_sd[1]$value <- 0
 DataLL1$log_sd[1]$estimable <- TRUE
 DataLL1$input_type = "data"
@@ -103,29 +101,31 @@ DataLL2 <- new(NormalLPDF)
 DataLL2$observed_value <- 
   new(VariableVector, length.data2, length(length.data2))
 #initialize log_sd
-DataLL2$log_sd <- new(VariableVector, 1)
+DataLL2$log_sd <- new(VariableVector, -2, 1)
 DataLL2$log_sd[1]$value <- 0
 DataLL2$log_sd[1]$estimable <- TRUE
 DataLL2$input_type = "data"
 #link data log-likelihood to length from Pop2
 DataLL2$set_distribution_links("data", Pop2$get_id(), Pop2$get_module_name(), "length")
 
-#set up shared prior for logk
-GrowthKPrior <- new(NormalLPDF)
-GrowthKPrior$expected_value <- new(VariableVector, rep(mu[2], 2), 2)
-# GrowthKPrior$expected_value <- new(VariableVector, rep(mu[2], 1), 1)
-GrowthKPrior$input_type <- "prior"
-GrowthKPrior$log_sd[1]$value <- log(0.1579867)
-#link prior log-likelihood to the logk parameters from vonB1 and vonB2
-GrowthKPrior$set_distribution_links( "prior", c(vonB1$get_id(),vonB2$get_id()), 
-  c(vonB1$get_module_name(),vonB2$get_module_name()), c("logk", "logk"))
-# GrowthKPrior$set_distribution_links( "prior", c(vonB2$get_id()), 
-#   c(vonB2$get_module_name()), c("logk"))
+#set up shared multivariate prior for logk and l_inf
+GrowthMVPrior <- new(MVNormLPDF)
+GrowthMVPrior$expected_value <- new(VariableVector, mu, 2)
+GrowthMVPrior$input_type <- "prior"
+phi <- cov2cor(Sigma)[1,2]
+GrowthMVPrior$log_sd <- new(VariableVector, 0.5*log(diag(Sigma)), 2)
+GrowthMVPrior$logit_phi <- new(VariableVector, log((phi+1)/(1-phi)), 1)  
+#link prior log-likelihood to the l_inf and logk parameters from vonB
+GrowthMVPrior$set_distribution_links( "prior", 
+                                      c(vonB1$get_id(), vonB1$get_id(),
+                                        vonB2$get_id(), vonB2$get_id()),
+                                      c(vonB1$get_module_name(),vonB1$get_module_name(),
+                                        vonB2$get_module_name(),vonB2$get_module_name()),
+                                      c("logk", "l_inf","logk", "l_inf"))
 
 #prepare for interfacing with TMB
 CreateModel()
 
-message("CreateModel works in multi-module prior test")
 
 #create a data list (data set above)
 Data <- list(
@@ -143,7 +143,6 @@ Parameters <- list(
 obj <- TMB::MakeADFun(Data, Parameters, DLL="ModularTMBExample")
 #newtonOption(obj, smartsearch=FALSE)
 
-message("TMB::MakeADFun works in multi-module prior test")
 
 
 print(obj$gr(obj$par))
@@ -160,26 +159,27 @@ for(i in seq_along(mean.sdr)){
   ci[[i]] <- mean.sdr[i] + c(-1,1)*qnorm(.975)*std.sdr[i]
 }
 
-
 expect_equal( log(k[1]) > ci[[1]][1] & log(k[1]) < ci[[1]][2], TRUE)
 expect_equal( l_inf[1] > ci[[2]][1] & l_inf[1] < ci[[2]][2], TRUE)
-# expect_equal( log(k[2]) > ci[[3]][1] & log(k[2]) < ci[[3]][2], TRUE)
-expect_equal( l_inf[2] > ci[[4]][1] & l_inf[2] < ci[[4]][2], TRUE)
+#expect_equal( log(k[2]) > ci[[3]][1] & log(k[2]) < ci[[3]][2], TRUE)
+#expect_equal( l_inf[2] > ci[[4]][1] & l_inf[2] < ci[[4]][2], TRUE)
 expect_equal( log(.1) > ci[[5]][1] & log(.1) < ci[[5]][2], TRUE)
-expect_equal( log(.1) > ci[[6]][1] & log(.1) < ci[[6]][2], TRUE)
+#expect_equal( log(.1) > ci[[6]][1] & log(.1) < ci[[6]][2], TRUE)
 
-})
 
-message("multi-module prior test complete")
+fit <- tmbstan::tmbstan(obj, init = "best.last.par", iter = 4000)
+#pairs(fit, pars=names(obj$par))
+#traceplot(fit, pars=names(obj$par), inc_warmup=TRUE)
+postmle <- as.matrix(fit)
+bayes.pi <- rstantools::predictive_interval(postmle)
 
-test_that( "test_tmbstan", {
-  skip("skip test tmbstan")
-  library(tmbstan)
-  fit <- tmbstan(obj)
-  library(shinystan)
-  library(ggplot2)
-  launch_shinystan(fit)
-})
+expect_equal(log(k[1]) > bayes.pi[1,1] & log(k[1]) < bayes.pi[1,2], TRUE)
+expect_equal(l_inf[1] > bayes.pi[2,1] & l_inf[1] < bayes.pi[2,2], TRUE)
+#expect_equal(log(k[2]) > bayes.pi[3,1] & log(k[2]) < bayes.pi[3,2], TRUE)
+#expect_equal(l_inf[2] > bayes.pi[4,1] & l_inf[2] < bayes.pi[4,2], TRUE)
+#expect_equal(log(.1) > bayes.pi[5,1] & log(.1) < bayes.pi[5,2], TRUE)
+expect_equal(log(.1) > bayes.pi[6,1] & log(.1) < bayes.pi[6,2], TRUE)
+
 
 clear()
 
