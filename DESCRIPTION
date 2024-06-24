@@ -18,4 +18,6 @@ LinkingTo:
     RcppEigen
 Suggests:
     testthat,
-    mvtnorm
+    mvtnorm,
+    tmbstan,
+    rstantools
