@@ -184,14 +184,3 @@ expect_equal(log(.1) > bayes.pi[6,1] & log(.1) < bayes.pi[6,2], TRUE)
 clear()
 
 
-# #update the von Bertalanffy object with updated parameters
-# vonB$finalize(rep$par.fixed)
-
-# #show results
-# vonB$show()
-
-# obj$report()
-
-# #show final gradient
-# print("final gradient:")
-# print(rep$gradient.fixed)

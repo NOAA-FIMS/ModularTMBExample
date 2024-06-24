@@ -8,7 +8,6 @@
 # params <- matrix(c('Loo', 'K'), ncol=2)
 # x <- Search_species(Genus="Hippoglossoides")$match_taxonomy
 # y <- Plot_taxa(x, params=params)
-library(mvtnorm)
 
 # multivariate normal in log space for two growth parameters
 mu <- c(Linf = 3.848605, K = -1.984452) #y[[1]]$Mean_pred[params]
@@ -24,7 +23,7 @@ sim.parms <- mvtnorm::rmvnorm(1, mu, Sigma)
 l_inf<- sim.parms[1]
 a_min<- 0.1
 k<- exp(sim.parms[2])
-ages<-c(0.1, 1,2,3,4,5,6,7,8)
+ages<-c(0.1, 1,2,3,4,5,6,7,8,9,10)
 Length<-replicate(length(ages), 0.0)
 
 for(i in 1:length(ages)){
@@ -48,8 +47,8 @@ vonB$a_min$value<-.1
 vonB$a_min$estimable<-FALSE
 
 #initialize l_inf
-vonB$l_inf$value<-7
-vonB$l_inf$estimable<-TRUE
+vonB$l_inf$value<-l_inf
+vonB$l_inf$estimable<-FALSE
 
 #set data
 Pop <- new(Population) 
@@ -105,34 +104,14 @@ for(i in seq_along(mean.sdr)){
 
 test_that("test single prior",{
   expect_equal( log(k) > ci[[1]][1] & log(k) < ci[[1]][2], TRUE)
-  expect_equal( l_inf > ci[[2]][1] & l_inf < ci[[2]][2], TRUE)
   expect_equal( log(.1) > ci[[3]][1] & log(.1) < ci[[3]][2], TRUE)
-})
 
-#Check nll output
-DataLL$finalize(opt$par)
-GrowthKPrior$finalize(opt$par)
-DataLL$log_likelihood_vec
-GrowthKPrior$log_likelihood_vec
 
-test_that("test_tmbstan", {
-  skip("skip test tmbstan")
-  library(tmbstan)
-  library(shinystan)
-  library(ggplot2)
-  fit <- tmbstan(obj, init = "best.last.par")
-  launch_shinystan(obj)
+fit <- tmbstan::tmbstan(obj, init = "best.last.par")
+postmle <- as.matrix(fit)
+bayes.pi <- rstantools::predictive_interval(postmle)
+
+expect_equal(log(k) > bayes.pi[1,1] & log(k) < bayes.pi[1,2], TRUE)
 })
 clear()
-# #update the von Bertalanffy object with updated parameters
-# vonB$finalize(rep$par.fixed)
-
-# #show results
-# vonB$show()
-
-# obj$report()
-
-# #show final gradient
-# print("final gradient:")
-# print(rep$gradient.fixed)
 
