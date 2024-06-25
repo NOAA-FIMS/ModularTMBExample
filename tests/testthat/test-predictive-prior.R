@@ -94,7 +94,7 @@ print(obj$gr(obj$par))
 # })
 
 test_that("test tmbstan, single predictive prior", {
-  fit <- tmbstan::tmbstan(obj, init = "best.last.par")
+  fit <- tmbstan::tmbstan(obj)
   #pairs(fit, pars=names(obj$par))
   postmle <- as.matrix(fit)
   expect_equal(unname(mu[1]), median(postmle[,1]), tolerance = .1)
@@ -157,7 +157,7 @@ obj <- TMB::MakeADFun(Data, Parameters, DLL="ModularTMBExample")
 #newtonOption(obj, smartsearch=FALSE)
 
 test_that("test tmbstan, predictive mutivariate prior", {
-  fit <- tmbstan::tmbstan(obj, init = "best.last.par", iter = 4000)
+  fit <- tmbstan::tmbstan(obj)
   #pairs(fit, pars=names(obj$par))
   #traceplot(fit, pars=names(obj$par), inc_warmup=TRUE)
   postmle <- as.matrix(fit)[,1:2]
