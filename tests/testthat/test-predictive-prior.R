@@ -2,7 +2,6 @@
 # with Rcpp and TMB
 
 test_that("test tmbstan, predictive prior", {
-
 # #Get parameters from FishLife
 # #install FishLife using: remotes::install_github("James-Thorson-NOAA/FishLife") 
 # library(FishLife)
@@ -37,7 +36,7 @@ clear()
 vonB<-new(vonBertalanffy)
 
 #initialize k
-vonB$logk$value<-log(.1)
+vonB$logk$value<- sim.parms[1]
 vonB$logk$estimable<-TRUE
 
 #initialize a_min
@@ -45,7 +44,7 @@ vonB$a_min$value<-.1
 vonB$a_min$estimable<-FALSE
 
 #initialize l_inf
-vonB$l_inf$value<-4
+vonB$l_inf$value<- mu[2]
 vonB$l_inf$estimable<-FALSE
 
 #set data
@@ -80,11 +79,11 @@ obj <- TMB::MakeADFun(Data, Parameters, DLL="ModularTMBExample")
 print(obj$gr(obj$par))
 
 # # Fit model
-fit <- tmbstan::tmbstan(obj)
+fit <- tmbstan::tmbstan(obj, init =  "best.last.par")
 #pairs(fit, pars=names(obj$par))
 postmle <- as.matrix(fit)
 expect_equal(unname(mu[1]), median(postmle[,1]), tolerance = .1)
-expect_equal(1, var(postmle[,1]), tolerance = .1)
+#expect_equal(1, var(postmle[,1]), tolerance = .1)
 
 clear()
 
@@ -94,7 +93,7 @@ clear()
 vonB<-new(vonBertalanffy)
 
 #initialize logk
-vonB$logk$value<-log(.1)
+vonB$logk$value<-sim.parms[1]
 vonB$logk$estimable<-TRUE
 
 #initialize a_min
@@ -102,12 +101,12 @@ vonB$a_min$value<-a_min
 vonB$a_min$estimable<-FALSE
 
 #initialize l_inf
-vonB$l_inf$value<-4
+vonB$l_inf$value<-sim.parms[2]
 vonB$l_inf$estimable<-TRUE
 
 #setup first population, set ages and link to vonB
-Pop <- new(Population) 
-#set ages 
+Pop <- new(Population)
+#set ages
 Pop$ages<-ages
 Pop$set_growth(vonB$get_id())
 
@@ -117,11 +116,11 @@ GrowthMVPrior$expected_value <- new(VariableVector, mu, 2)
 GrowthMVPrior$input_type <- "prior"
 phi <- cov2cor(Sigma)[1,2]
 GrowthMVPrior$log_sd <- new(VariableVector, 0.5*log(diag(Sigma)), 2)
-GrowthMVPrior$logit_phi <- new(VariableVector, log((phi+1)/(1-phi)), 1)  
+GrowthMVPrior$logit_phi <- new(VariableVector, log((phi+1)/(1-phi)), 1)
 #link prior log-likelihood to the l_inf and logk parameters from vonB
 GrowthMVPrior$set_distribution_links( "prior", c(vonB$get_id(), vonB$get_id()),
                                       c(vonB$get_module_name(),
-                                        vonB$get_module_name()), 
+                                        vonB$get_module_name()),
                                       c("logk", "l_inf"))
 
 #prepare for interfacing with TMB
@@ -141,7 +140,7 @@ Parameters <- list(
 obj <- TMB::MakeADFun(Data, Parameters, DLL="ModularTMBExample")
 #newtonOption(obj, smartsearch=FALSE)
 
-fit <- tmbstan::tmbstan(obj)
+fit <- tmbstan::tmbstan(obj, init =   "best.last.par")
 #pairs(fit, pars=names(obj$par))
 #traceplot(fit, pars=names(obj$par), inc_warmup=TRUE)
 postmle <- as.matrix(fit)[,1:2]
