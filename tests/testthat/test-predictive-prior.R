@@ -1,6 +1,7 @@
 # A simple example showing how to use portable models
 # with Rcpp and TMB
 
+test_that("test tmbstan, predictive prior", {
 
 # #Get parameters from FishLife
 # #install FishLife using: remotes::install_github("James-Thorson-NOAA/FishLife") 
@@ -29,6 +30,8 @@ ages<-c(a_min, 1,2,3,4,5,6,7,8,9,10)
 
 #clear the parameter list, if there already is one
 clear()
+
+## test single predictive prior =======================
 
 #create a von Bertalanffy object
 vonB<-new(vonBertalanffy)
@@ -77,33 +80,15 @@ obj <- TMB::MakeADFun(Data, Parameters, DLL="ModularTMBExample")
 print(obj$gr(obj$par))
 
 # # Fit model
-# opt <- nlminb(obj$par, obj$fn, obj$gr)
-# sdr <- TMB::sdreport(obj)
-
-# mean.sdr <- as.list(sdr, "Est")$p
-# std.sdr <- as.list(sdr, "Std")$p
-# ci <- list()
-# for(i in seq_along(mean.sdr)){
-#   ci[[i]] <- mean.sdr[i] + c(-1,1)*qnorm(.975)*std.sdr[i]
-# }
-
-# test_that("test single prior",{
-#   expect_equal( log(k) > ci[[1]][1] & log(k) < ci[[1]][2], TRUE)
-#   expect_equal( l_inf > ci[[2]][1] & l_inf < ci[[2]][2], TRUE)
-#   expect_equal( log(.1) > ci[[3]][1] & log(.1) < ci[[3]][2], TRUE)
-# })
-
-test_that("test tmbstan, single predictive prior", {
-  fit <- tmbstan::tmbstan(obj)
-  #pairs(fit, pars=names(obj$par))
-  postmle <- as.matrix(fit)
-  expect_equal(unname(mu[1]), median(postmle[,1]), tolerance = .1)
-  expect_equal(1, var(postmle[,1]), tolerance = .1)
-})
+fit <- tmbstan::tmbstan(obj)
+#pairs(fit, pars=names(obj$par))
+postmle <- as.matrix(fit)
+expect_equal(unname(mu[1]), median(postmle[,1]), tolerance = .1)
+expect_equal(1, var(postmle[,1]), tolerance = .1)
 
 clear()
 
-## test multivariate predictive prior
+## test multivariate predictive prior =======================
 
 #create a von Bertalanffy object
 vonB<-new(vonBertalanffy)
@@ -156,11 +141,12 @@ Parameters <- list(
 obj <- TMB::MakeADFun(Data, Parameters, DLL="ModularTMBExample")
 #newtonOption(obj, smartsearch=FALSE)
 
-test_that("test tmbstan, predictive mutivariate prior", {
-  fit <- tmbstan::tmbstan(obj)
-  #pairs(fit, pars=names(obj$par))
-  #traceplot(fit, pars=names(obj$par), inc_warmup=TRUE)
-  postmle <- as.matrix(fit)[,1:2]
-  expect_equal(unname(mu), unname(apply(postmle, 2, median)), tolerance = .01)
-  expect_equal(unname(Sigma), unname(var(postmle)), tolerance = .1)
+fit <- tmbstan::tmbstan(obj)
+#pairs(fit, pars=names(obj$par))
+#traceplot(fit, pars=names(obj$par), inc_warmup=TRUE)
+postmle <- as.matrix(fit)[,1:2]
+expect_equal(unname(mu), unname(apply(postmle, 2, median)), tolerance = .01)
+expect_equal(unname(Sigma), unname(var(postmle)), tolerance = .1)
 })
+
+clear()

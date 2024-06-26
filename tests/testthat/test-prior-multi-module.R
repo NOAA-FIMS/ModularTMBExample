@@ -1,6 +1,5 @@
 test_that("test multi-module prior",{
 
-  
 # #Get parameters from FishLife
 # #install FishLife using: remotes::install_github("James-Thorson-NOAA/FishLife") 
 # library(FishLife)
@@ -9,22 +8,22 @@ test_that("test multi-module prior",{
 # y <- Plot_taxa(x, params=params)
 
   
-  # multivariate normal in log space for two growth parameters
-  mu <- c(K = -1.984452, Linf = 3.848605) #y[[1]]$Mean_pred[params]
-  Sigma <- rbind(c( 0.1579867, -0.1147763),
-                 c( -0.1147763,  0.1545170)) #y[[1]]$Cov_pred[params, params]
-  row.names(Sigma) <- c('K', 'Linf')
-  colnames(Sigma) <- c('K', 'Linf')
-  
-  
-  #simulate data
-  set.seed(123)
-  sim.parms <- mvtnorm::rmvnorm(2, mu, Sigma)
-  l_inf<- sim.parms[,2]
-  a_min<- 0.1
-  k<- exp(sim.parms[,1])
-  
-  ages<-c(a_min, 1,2,3,4,5,6,7,8,9,10)
+# multivariate normal in log space for two growth parameters
+mu <- c(K = -1.984452, Linf = 3.848605) #y[[1]]$Mean_pred[params]
+Sigma <- rbind(c( 0.1579867, -0.1147763),
+               c( -0.1147763,  0.1545170)) #y[[1]]$Cov_pred[params, params]
+row.names(Sigma) <- c('K', 'Linf')
+colnames(Sigma) <- c('K', 'Linf')
+
+
+#simulate data
+set.seed(123)
+sim.parms <- mvtnorm::rmvnorm(2, mu, Sigma)
+l_inf<- sim.parms[,2]
+a_min<- 0.1
+k<- exp(sim.parms[,1])
+
+ages<-c(a_min, 1,2,3,4,5,6,7,8,9,10)
 Length1 <- Length2 <- replicate(length(ages), 0.0)
 
 for(i in 1:length(ages)){
@@ -142,8 +141,6 @@ Parameters <- list(
 #setup TMB object
 obj <- TMB::MakeADFun(Data, Parameters, DLL="ModularTMBExample")
 #newtonOption(obj, smartsearch=FALSE)
-
-
 
 print(obj$gr(obj$par))
 

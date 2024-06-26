@@ -1,6 +1,8 @@
 # A simple example showing how to use portable models
 # with Rcpp and TMB
 
+
+test_that("test single nll",{
 #simulate data
 l_inf<- 3
 a_min<- 0.1
@@ -82,11 +84,10 @@ for(i in seq_along(mean.sdr)){
   ci[[i]] <- mean.sdr[i] + c(-1,1)*qnorm(.975)*std.sdr[i]
 }
 
-test_that("test single nll",{
-  expect_equal( log(k) > ci[[1]][1] & log(k) < ci[[1]][2], TRUE)
-  expect_equal( l_inf > ci[[2]][1] & l_inf < ci[[2]][2], TRUE)
-  expect_equal( log(.1) > ci[[3]][1] & log(.1) < ci[[3]][2], TRUE)
-})
+expect_equal( log(k) > ci[[1]][1] & log(k) < ci[[1]][2], TRUE)
+expect_equal( l_inf > ci[[2]][1] & l_inf < ci[[2]][2], TRUE)
+expect_equal( log(.1) > ci[[3]][1] & log(.1) < ci[[3]][2], TRUE)
+
 
 #Test osa
 osa.fg <- TMB::oneStepPredict(obj, observation.name = "y", method = "fullGaussian")
@@ -99,12 +100,12 @@ osa.cdf <- TMB::oneStepPredict(obj, observation.name = "y",
 exp.value <-  (opt$par[2] * (1.0 - exp(-exp(opt$par[1]) * (ages - a_min))))
 pear.resid <- (length.data-exp.value)/ exp(opt$par[3])
 
-test_that("test osa", {
-  expect_equal(pear.resid, osa.fg$residual)
-  expect_equal(pear.resid, osa.osg$residual)
-  expect_equal(pear.resid, osa.gen$residual, tolerance = 1e-4)
-  expect_equal(pear.resid, osa.cdf$residual)
-})
+
+expect_equal(pear.resid, osa.fg$residual)
+expect_equal(pear.resid, osa.osg$residual)
+expect_equal(pear.resid, osa.gen$residual, tolerance = 1e-4)
+expect_equal(pear.resid, osa.cdf$residual)
+
 
 #test simulation
 set.seed(11)
@@ -119,9 +120,8 @@ test_that("test simulation", {
 vonB$finalize(opt$par)
 DataLL$finalize(opt$par)
 #print optimzed values from RCPP
-test_that("test rcpp output", {
-  expect_equal(unname(opt$par[1]), vonB$logk$value)
-  expect_equal(unname(opt$par[2]), vonB$l_inf$value) 
+expect_equal(unname(opt$par[1]), vonB$logk$value)
+expect_equal(unname(opt$par[2]), vonB$l_inf$value) 
 })
 
 # currently fails due to bug in finalize functions

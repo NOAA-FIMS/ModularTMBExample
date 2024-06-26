@@ -1,7 +1,7 @@
 # A simple example showing how to use portable models
 # with Rcpp and TMB
 
-
+test_that("test single prior",{
 # #Get parameters from FishLife
 # #install FishLife using: remotes::install_github("James-Thorson-NOAA/FishLife") 
 # library(FishLife)
@@ -102,9 +102,9 @@ for(i in seq_along(mean.sdr)){
   ci[[i]] <- mean.sdr[i] + c(-1,1)*qnorm(.975)*std.sdr[i]
 }
 
-test_that("test single prior",{
-  expect_equal( log(k) > ci[[1]][1] & log(k) < ci[[1]][2], TRUE)
-  expect_equal( log(.1) > ci[[3]][1] & log(.1) < ci[[3]][2], TRUE)
+
+expect_equal( log(k) > ci[[1]][1] & log(k) < ci[[1]][2], TRUE)
+expect_equal( log(.1) > ci[[2]][1] & log(.1) < ci[[2]][2], TRUE)
 
 
 fit <- tmbstan::tmbstan(obj, init = "best.last.par")
