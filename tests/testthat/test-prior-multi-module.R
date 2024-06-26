@@ -167,7 +167,7 @@ expect_equal( log(.1) > ci[[5]][1] & log(.1) < ci[[5]][2], TRUE)
 #expect_equal( log(.1) > ci[[6]][1] & log(.1) < ci[[6]][2], TRUE)
 
 
-fit <- tmbstan::tmbstan(obj, init = "best.last.par", iter = 4000)
+fit <- tmbstan::tmbstan(obj, init = "best.last.par")
 #pairs(fit, pars=names(obj$par))
 #traceplot(fit, pars=names(obj$par), inc_warmup=TRUE)
 postmle <- as.matrix(fit)

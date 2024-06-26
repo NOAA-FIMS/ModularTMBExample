@@ -117,7 +117,7 @@ for(i in seq_along(mean_sdr)){
 
 
 #Fully Bayesian
-fit <- tmbstan::tmbstan(obj)
+fit <- tmbstan::tmbstan(obj, init = "best.last.par")
 #pairs(fit, pars=names(obj$par))
 #traceplot(fit, pars=names(obj$par), inc_warmup=TRUE)
 postmle <- as.matrix(fit)
