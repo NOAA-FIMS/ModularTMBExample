@@ -49,6 +49,9 @@ struct NormalLPDF : public DensityComponentBase<Type> {
         for(int i=0; i<this->observed_value.size(); i++){
           if(osa_flag){
             this->log_likelihood_vec[i] = this->keep[i] * dnorm(this->observed_value[i], mu[i], sd[i], true);
+            cdf = squeeze(pnorm(this->observed_value[i], mu[i], sd[i]));
+            this->log_likelihood_vec[i] += this->keep.cdf_lower[i] * log( cdf );
+            this->log_likelihood_vec[i] += this->keep.cdf_upper[i] * log( 1.0 - cdf );
           } else {
             this->log_likelihood_vec[i] = dnorm(this->observed_value[i], mu[i], sd[i], true);
           }
@@ -58,16 +61,9 @@ struct NormalLPDF : public DensityComponentBase<Type> {
                 SIMULATE_F(this->of){
                     this->observed_value[i] = rnorm(mu[i], sd[i]);
                 }
-                
-            }
-            
-            if(osa_flag){//data observation type implements osa residuals
-                //code for osa cdf method
-                cdf = pnorm(this->observed_value[i], mu[i], sd[i]);
-                this->log_likelihood_vec[i] = this->keep.cdf_lower[i] * log( squeeze(cdf) );
-                this->log_likelihood_vec[i] = this->keep.cdf_upper[i] * log( 1.0 - squeeze(cdf) );
             }
           #endif
+          
            
             
         }

@@ -90,6 +90,10 @@ test_that("test single nll",{
 
 #Test osa
 osa.fg <- TMB::oneStepPredict(obj, observation.name = "y", method = "fullGaussian")
+osa.osg <- TMB::oneStepPredict(obj, observation.name = "y", 
+                               data.term.indicator = "keep", method = "oneStepGaussian")
+osa.gen <- TMB::oneStepPredict(obj, observation.name = "y", 
+                               data.term.indicator = "keep", method = "oneStepGeneric")
 osa.cdf <- TMB::oneStepPredict(obj, observation.name = "y", 
                                data.term.indicator = "keep", method = "cdf")
 exp.value <-  (opt$par[2] * (1.0 - exp(-exp(opt$par[1]) * (ages - a_min))))
@@ -97,8 +101,9 @@ pear.resid <- (length.data-exp.value)/ exp(opt$par[3])
 
 test_that("test osa", {
   expect_equal(pear.resid, osa.fg$residual)
-  # cdf not working
-  # expect_equal(pear.resid, osa.cdf$residual)
+  expect_equal(pear.resid, osa.osg$residual)
+  expect_equal(pear.resid, osa.gen$residual, tolerance = 1e-4)
+  expect_equal(pear.resid, osa.cdf$residual)
 })
 
 #test simulation
@@ -123,3 +128,4 @@ test_that("test rcpp output", {
 # expect_equal(opt$objective, sum(DataLL$log_likelihood_vec))
 
 clear()
+
