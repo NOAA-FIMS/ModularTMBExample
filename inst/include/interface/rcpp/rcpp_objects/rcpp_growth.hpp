@@ -60,7 +60,8 @@ public:
     }
 
     virtual std::string get_module_name() {
-        return "vonBertalanffy";
+        //return "vonBertalanffy";
+        return this.attr("names");
     }
 
     template<typename Type>
@@ -89,65 +90,36 @@ public:
         //need to set up maps even when parameters are not estimable (e.g. for penalties or random effects)
         ss << key << "_logk";
         info->variable_map[ss.str()] = &(vb)->logk;
-        ss.str("");
-       
 
         if (this->logk.estimable) {
             model->parameters.push_back(&(vb)->logk[0]);
-            model->pnames.push_back("logk");
+            model->pnames.push_back(ss.str());
         }
+        ss.str("");
 
         //initialize l_inf
         vb->l_inf.resize(1);
         vb->l_inf[0] = this->l_inf.value;
         ss << key << "_l_inf";
         info->variable_map[ss.str()] = &(vb)->l_inf;
-        ss.str("");
 
         if (this->l_inf.estimable) {
             model->parameters.push_back(&(vb)->l_inf[0]);
-            model->pnames.push_back("l_inf");
+            model->pnames.push_back(ss.str());
         }
+        ss.str("");
 
         //initialize a_min
         vb->a_min.resize(1);
         vb->a_min[0] = this->a_min.value;
         ss << key << "_a_min";
         info->variable_map[ss.str()] = &(vb)->a_min;
-        ss.str("");
 
         if (this->a_min.estimable) {
             model->parameters.push_back(&(vb)->a_min[0]);
-            model->pnames.push_back("a_min");
+            model->pnames.push_back(ss.str());
         }
-
-/*
-        //initialize alpha
-        vb->alpha.resize(1);
-        vb->alpha[0] = this->alpha.value;
-        ss << key << "_alpha";
-        model->info->variable_map[ss.str()] = &(vb)->alpha[0];
         ss.str("");
-
-        if (this->alpha.estimable) {
-            model->parameters.push_back(&(vb)->alpha[0]);
-        }
-
-     
-        //initialize beta
-        vb->beta.resize(1);
-        vb->beta[0] = this->beta.value;
-        ss << key << "_beta";
-        model->info->variable_map[ss.str()] = &(vb)->beta[0];
-        Rcpp::Rcout << ss.str() << std::endl;
-        ss.str("");
-
-        if (this->beta.estimable) {
-            model->parameters.push_back(&(vb)->beta[0]);
-        }
-
-*/
-
 
         info->vb_models[vb->id] = vb;
         return true;

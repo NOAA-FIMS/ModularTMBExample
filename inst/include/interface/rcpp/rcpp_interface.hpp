@@ -57,15 +57,15 @@ Rcpp::NumericVector get_data_vector() {
 /**
  * Returns the initial values for the parameter set
  */
-Rcpp::StringVector get_parameter_names_vector() {
-    Rcpp::StringVector pnames;
-    std::shared_ptr<Model<double> > model = Model<double>::getInstance();
-
+Rcpp::List get_parameter_names(Rcpp::List pars) {
+  std::shared_ptr<Model<double> > model = Model<double>::getInstance();
+  pars.attr("names") = model->pnames;
+  /*
     for (int i = 0; i < model->pnames.size(); i++) {
-        pnames.push_back(model->pnames[i]);
+        pars[i].attr("names") = model->pnames[i];
     }
-
-    return pnames;
+*/
+    return pars;
 }
 
 
@@ -79,6 +79,7 @@ void clear_internal() {
     Model<Type>::getInstance();
   model->parameters.clear();
   model->data.clear();
+  model->pnames.clear();
 }
 
 /**
@@ -169,7 +170,7 @@ RCPP_MODULE(growth) {
   //  .method("show", &vonBertalanffyInterface::show);
     Rcpp::function("get_data_vector", get_data_vector);
     Rcpp::function("get_parameter_vector", get_parameter_vector);
-    Rcpp::function("get_parameter_names_vector", get_parameter_names_vector);
+    Rcpp::function("get_parameter_names", get_parameter_names);
     Rcpp::function("clear", clear);
     Rcpp::function("CreateModel", CreateModel);
     Rcpp::function("CreateVector", CreateVector);

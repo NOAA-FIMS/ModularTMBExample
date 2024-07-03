@@ -76,6 +76,7 @@ print(obj$gr(obj$par))
 ## Fit model
 opt <- nlminb(obj$par, obj$fn, obj$gr)
 sdr <- TMB::sdreport(obj)
+named.pars <- get_parameter_names(opt$par)
 
 mean.sdr <- as.list(sdr, "Est")$p
 std.sdr <- as.list(sdr, "Std")$p

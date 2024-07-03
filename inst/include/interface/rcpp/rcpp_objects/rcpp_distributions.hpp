@@ -111,13 +111,16 @@ public:
             }
         }
         normal->log_sd.resize(this->log_sd.size());
+        std::stringstream ss;
+        ss << this->get_module_name() << "_" << this->id << "_log_sd";
         for(size_t i=0; i<this->log_sd.size(); i++){
             normal->log_sd[i] = this->log_sd[i].value;
             if(this->log_sd[i].estimable){
                 model->parameters.push_back(&(normal)->log_sd[i]);
-                model->pnames.push_back("log_sd");
+                model->pnames.push_back(ss.str());
             }
         }
+        ss.str("");
         
         model->density_components[normal->id] = normal;
         info->density_components[normal->id] = normal;
@@ -252,22 +255,27 @@ public:
             }
         }
         mvnorm->log_sd.resize(this->log_sd.size());
+        std::stringstream ss;
+        ss << this->get_module_name() << "_" << this->id << "_log_sd";
         for(size_t i=0; i<this->log_sd.size(); i++){
             mvnorm->log_sd[i] = this->log_sd[i].value;
             if(this->log_sd[i].estimable){
                 model->parameters.push_back(&(mvnorm)->log_sd[i]);
-                model->pnames.push_back("log_sd");
+                model->pnames.push_back(ss.str());
             }
         }
+        ss.str("");
 
         mvnorm->logit_phi.resize(this->logit_phi.size());
+        ss << this->get_module_name() << "_" << this->id << "_logit_phi";
         for(size_t i=0; i<this->logit_phi.size(); i++){
             mvnorm->logit_phi[i] = this->logit_phi[i].value;
             if(this->logit_phi[i].estimable){
                 model->parameters.push_back(&(mvnorm)->logit_phi[i]);
-                model->pnames.push_back("logit_phi");
+                model->pnames.push_back(ss.str());
             }
         }
+        ss.str("");
     
         
         model->density_components[mvnorm->id] = mvnorm;
