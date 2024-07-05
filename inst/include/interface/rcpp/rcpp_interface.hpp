@@ -40,6 +40,21 @@ Rcpp::NumericVector get_parameter_vector() {
 }
 
 /**
+ * Returns the initial values for the random effects
+ */
+Rcpp::NumericVector get_random_effects_vector() {
+  Rcpp::NumericVector re;
+  std::shared_ptr<Model<double> > model = Model<double>::getInstance();
+  
+  
+  for (int i = 0; i < model->random_effects.size(); i++) {
+    re.push_back(*model->random_effects[i]);
+  }
+  
+  return re;
+}
+
+/**
  * Returns the input data vector for the model
  */
 Rcpp::NumericVector get_data_vector() {
@@ -127,6 +142,7 @@ RCPP_MODULE(growth) {
       .method("size", &VariableVector::size)
       .method("resize", &VariableVector::resize)
       .method("set_all_estimable", &VariableVector::set_all_estimable)
+      .method("set_all_random_effects", &VariableVector::set_all_random_effects)
       .method("fill", &VariableVector::fill);
     Rcpp::class_<PopulationInterface>("Population")
     .constructor()
@@ -157,6 +173,17 @@ RCPP_MODULE(growth) {
     .field("simulate_flag", &MVNormLPDFInterface::simulate_flag)
     .method("get_id", &MVNormLPDFInterface::get_id)
     .method("set_distribution_links", &MVNormLPDFInterface::SetDistributionLinks);
+    Rcpp::class_<AR1LPDFInterface>("AR1LPDF")
+      .constructor()
+      .method("finalize", &AR1LPDFInterface::finalize)
+      .field("observed_value", &AR1LPDFInterface::observed_value)
+      .field("log_sd", &AR1LPDFInterface::log_sd)
+      .field("logit_rho", &AR1LPDFInterface::logit_rho)
+      .field("input_type", &AR1LPDFInterface::input_type)
+      .field("log_likelihood_vec", &AR1LPDFInterface::log_likelihood_vec)
+      .field("simulate_flag", &AR1LPDFInterface::simulate_flag)
+      .method("get_id", &AR1LPDFInterface::get_id)
+      .method("set_distribution_links", &AR1LPDFInterface::SetDistributionLinks);
     Rcpp::class_<vonBertalanffyInterface>("vonBertalanffy")
     .constructor()
     .method("finalize", &vonBertalanffyInterface::finalize)
@@ -170,6 +197,7 @@ RCPP_MODULE(growth) {
   //  .method("show", &vonBertalanffyInterface::show);
     Rcpp::function("get_data_vector", get_data_vector);
     Rcpp::function("get_parameter_vector", get_parameter_vector);
+    Rcpp::function("get_random_effects_vector", get_random_effects_vector);
     Rcpp::function("get_parameter_names", get_parameter_names);
     Rcpp::function("clear", clear);
     Rcpp::function("CreateModel", CreateModel);

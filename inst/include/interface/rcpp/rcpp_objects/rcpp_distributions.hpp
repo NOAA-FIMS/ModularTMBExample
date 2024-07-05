@@ -391,12 +391,11 @@ public:
         ar1->simulate_flag = this->simulate_flag;
         ar1->osa_flag = false;
         
-         //initialize x and mu : how do I differentiate this from the SetX and SetMu functions above? flags?
         ar1->observed_value.resize(this->observed_value.size());
         for(size_t i=0; i<this->observed_value.size(); i++){
             ar1->observed_value[i] = this->observed_value[i].value;
-            if(this->observed_value[i].estimable){
-                model->parameters.push_back(&(ar1)->observed_value[i]);
+            if(this->observed_value[i].is_random_effect){
+                model->random_effects.push_back(&(ar1)->observed_value[i]);
             }
         }
         ar1->log_sd.resize(this->log_sd.size());

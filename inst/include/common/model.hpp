@@ -27,7 +27,8 @@ class Model{
       pop_iterator;
       
 
-    std::vector<Type*> parameters;    
+    std::vector<Type*> parameters;
+    std::vector<Type*> random_effects; 
     std::vector<Type*> data;
     std::vector<std::string> pnames;
     static std::shared_ptr<Model<Type> > model;
@@ -71,28 +72,26 @@ class Model{
       std::shared_ptr<DensityComponentBase<Type> > n = (*it).second;
       #ifdef TMB_MODEL
         n->of = this->of;
-        n->keep = this->keep;
       #endif
       if(n->input_type == "prior"){
         jnll -= n->evaluate();
       }
     }
 
-    /*
+    
     //setup pointers for random effects
-    //info->setup_random_effects();
+    info->setup_random_effects();
     //evaluate nlls for priors and random effects
      for(density_components_iterator it = this->density_components.begin(); it!= this->density_components.end(); ++it){
       std::shared_ptr<DensityComponentBase<Type> > n = (*it).second;
       #ifdef TMB_MODEL
         n->of = this->of;
-        n->keep = this->keep;
       #endif
       if(n->input_type == "random_effects"){
         jnll -= n->evaluate();
       }
     }
-    */
+    
     for (pop_iterator it = this->pop_models.begin();
          it != this->pop_models.end(); ++it) {
       std::shared_ptr<Population<Type> > pop = (*it).second;

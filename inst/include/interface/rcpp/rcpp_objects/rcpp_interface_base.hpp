@@ -20,7 +20,9 @@ public:
     uint32_t id;
     static std::vector<Variable*> parameters;
     static std::vector<Variable*> estimated_parameters;
+    static std::vector<Variable*> random_effects;
     bool estimable = FALSE;
+    bool is_random_effect = FALSE;
     double value = 0;
     std::string name_m;
     
@@ -39,6 +41,7 @@ public:
     Variable(const Variable& other){
         this->id = other.id;
         this->estimable = other.estimable;
+        this->is_random_effect = other.is_random_effect;
         this->value = other.value;
         this->name_m = other.name_m;
     }
@@ -143,6 +146,14 @@ public:
             v.estimable = estimable;
             this->storage_m[i] = Rcpp::wrap(v);
         }
+    }
+    
+    void set_all_random_effects(bool is_re){
+      for(size_t i = 0; i < this->storage_m.size(); i++){
+        Variable v = Rcpp::as<Variable>(this->storage_m[i]);
+        v.is_random_effect = is_re;
+        this->storage_m[i] = Rcpp::wrap(v);
+      }
     }
     
     void fill(double value){

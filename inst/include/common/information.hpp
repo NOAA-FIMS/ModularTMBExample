@@ -84,6 +84,22 @@ class Information {
       }
     }
     }
+    void setup_random_effects(){
+      for(density_components_iterator it = this->density_components.begin(); it!= this->density_components.end(); ++it){
+        std::shared_ptr<DensityComponentBase<Type> > n = (*it).second;
+        if(n->input_type == "re"){
+          variable_map_iterator vmit;
+          vmit = this->variable_map.find(n->key[0]); 
+          n->observed_value = *(*vmit).second;
+          
+          for(size_t i=1; i<n->key.size(); i++){
+            vmit = this->variable_map.find(n->key[i]); 
+            n->observed_value.insert(std::end(n->expected_value), 
+                                     std::begin(*(*vmit).second), std::end(*(*vmit).second));
+          } 
+        }
+      }
+    }
     void setup_data(){
       for(density_components_iterator it = this->density_components.begin(); it!= this->density_components.end(); ++it){
       std::shared_ptr<DensityComponentBase<Type> > n = (*it).second;
