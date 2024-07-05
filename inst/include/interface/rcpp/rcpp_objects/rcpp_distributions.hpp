@@ -6,6 +6,7 @@
 #include "rcpp_interface_base.hpp"
 #include "../../../distributions/normal_lpdf.hpp"
 #include "../../../distributions/mvnorm_lpdf.hpp"
+#include "../../../distributions/ar1_lpdf.hpp"
 #include "../rcpp_interface.hpp"
 
 /****************************************************************
@@ -337,6 +338,160 @@ public:
 
 };
 
+
+class AR1LPDFInterface : public DensityComponentsInterface{
+
+public:
+    VariableVector observed_value;
+    VariableVector log_sd;
+    VariableVector logit_rho;
+    VariableVector rho;
+    std::vector<double> log_likelihood_vec;
+    std::string input_type = "re";
+    std::vector<std::string> key;
+
+    bool simulate_flag = false;
+    
+    AR1LPDFInterface() : DensityComponentsInterface(){}
+    
+    virtual ~AR1LPDFInterface() {}
+    virtual uint32_t get_id() { return this->id; }
+    
+    virtual std::string get_module_name(){
+        return "AR1LPDFInterface";
+    }
+    
+    void SetDistributionLinks(std::string input_type, Rcpp::IntegerVector module_id, 
+        Rcpp::StringVector module_name, Rcpp::StringVector name){
+        this->input_type = input_type;
+
+        std::stringstream ss;
+        this->key.resize(module_id.size());
+        for(int i=0; i<module_id.size(); i++){
+            ss << module_name[i] << "_" << module_id[i] << "_" << name[i];
+            this->key[i] = ss.str();
+            ss.str("");
+        }
+    }
+
+    template<typename Type>
+    bool prepare_local() {
+    std::shared_ptr<Information<Type> > info =
+        Information<Type>::getInstance();
+     std::shared_ptr<AR1LPDF<Type> > ar1 =
+        std::make_shared<AR1LPDF<Type> >();
+
+        std::shared_ptr<Model<Type> > model = Model<Type>::getInstance();
+        ar1->input_type = this->input_type;
+        ar1->id = this->id;
+        ar1->key.resize(this->key.size());
+        for(int i=0; i<key.size(); i++){
+            ar1->key[i] = this-> key[i];
+        }
+        ar1->simulate_flag = this->simulate_flag;
+        ar1->osa_flag = false;
+        
+         //initialize x and mu : how do I differentiate this from the SetX and SetMu functions above? flags?
+        ar1->observed_value.resize(this->observed_value.size());
+        for(size_t i=0; i<this->observed_value.size(); i++){
+            ar1->observed_value[i] = this->observed_value[i].value;
+            if(this->observed_value[i].estimable){
+                model->parameters.push_back(&(ar1)->observed_value[i]);
+            }
+        }
+        ar1->log_sd.resize(this->log_sd.size());
+        std::stringstream ss;
+        ss << this->get_module_name() << "_" << this->id << "_log_sd";
+        for(size_t i=0; i<this->log_sd.size(); i++){
+            ar1->log_sd[i] = this->log_sd[i].value;
+            if(this->log_sd[i].estimable){
+                model->parameters.push_back(&(ar1)->log_sd[i]);
+                model->pnames.push_back(ss.str());
+            }
+        }
+        ss.str("");
+
+        ar1->logit_rho.resize(this->logit_rho.size());
+        ss << this->get_module_name() << "_" << this->id << "_logit_rho";
+        for(size_t i=0; i<this->logit_rho.size(); i++){
+            ar1->logit_rho[i] = this->logit_rho[i].value;
+            if(this->logit_rho[i].estimable){
+                model->parameters.push_back(&(ar1)->logit_rho[i]);
+                model->pnames.push_back(ss.str());
+            }
+        }
+        ss.str("");
+
+        ar1->rho.resize(this->rho.size());
+        ss << this->get_module_name() << "_" << this->id << "_rho";
+        for(size_t i=0; i<this->rho.size(); i++){
+            ar1->rho[i] = this->rho[i].value;
+            if(this->rho[i].estimable){
+                model->parameters.push_back(&(ar1)->rho[i]);
+                model->pnames.push_back(ss.str());
+            }
+        }
+        ss.str("");
+    
+        
+        model->density_components[ar1->id] = ar1;
+        info->density_components[ar1->id] = ar1;
+        return true;
+    }
+
+    
+    /**
+    * Prepares the model to work with TMB.
+     */
+    virtual bool prepare() {
+       
+    #ifdef TMB_MODEL
+        this->prepare_local<TMB_FIMS_REAL_TYPE>();
+        this->prepare_local<TMB_FIMS_FIRST_ORDER>();
+        this->prepare_local<TMB_FIMS_SECOND_ORDER>();
+        this->prepare_local<TMB_FIMS_THIRD_ORDER>();    
+    #endif
+        return true;
+
+    }
+
+    /**
+     * Update the model parameter values and finalize. Sets the parameter values and evaluates the
+     * portable model once and transfers values back to the Rcpp interface.
+     */
+    void finalize(Rcpp::NumericVector v) {
+        
+        std::shared_ptr< Model<double> > model = Model<double>::getInstance();
+        std::shared_ptr<DensityComponentBase<double> > density_components_base = model->density_components[this->id];
+        AR1LPDF<double>* ar1 = (AR1LPDF<double>*) density_components_base.get();  
+
+        for (int i = 0; i < v.size(); i++) {
+            (*model->parameters[i]) = v[i];
+        }
+
+        double f = model->evaluate();
+
+/*
+        for(int i=0; i<mvnorm->observed_value.size(); i++){
+            this->observed_value[i].value = mvnorm->observed_value[i];
+        }
+        for(int i=0; i<mvnorm->expected_value.size(); i++){
+            this->expected_value[i].value = mvnorm->expected_value[i];
+        }
+        for(int i=0; i<mvnorm->Sigma.col(0).size(); i++){
+            for(int j=0; j<mvnorm->Sigma.row(0).size(); j++){
+                this->Sigma[i,j] = mvnorm->Sigma(i,j);
+            }
+        }
+        */
+        this->log_likelihood_vec.resize(ar1->log_likelihood_vec.size());
+        for(int i=0; i<ar1->log_likelihood_vec.size(); i++){
+            this->log_likelihood_vec[i] = ar1->log_likelihood_vec[i];
+        }
+
+    }
+
+};
 
 
 
