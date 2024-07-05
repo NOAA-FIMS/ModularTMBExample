@@ -60,8 +60,7 @@ public:
     }
 
     virtual std::string get_module_name() {
-        //return "vonBertalanffy";
-        return this.attr("names");
+        return "vonBertalanffy";
     }
 
     template<typename Type>
