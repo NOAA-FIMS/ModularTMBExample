@@ -40,6 +40,7 @@ uint32_t PopulationInterfaceBase::id_g = 1;
 class PopulationInterface  : public PopulationInterfaceBase {
 public:
     Rcpp::NumericVector ages;
+    VariableVector u;
     uint32_t growth_id;        /**< id of the growth function*/
 
     
@@ -82,6 +83,29 @@ public:
         ss << key << "_length";
         info->variable_map[ss.str()] = &(pop)->length; 
         ss.str("");
+        
+        
+        if(this->u.size() == 0){
+          pop->u.resize(ages.size());
+          for(int i=0; i<ages.size(); i++){
+            pop->u[i] = 0.0;
+          }
+        } else {
+          pop->u.resize(this->u.size());
+          for(int i =0; i < this->u.size(); i++){
+            pop->u[i] = this->u[i];
+            if(this->u[i].is_random_effect){
+              model->random_effects.push_back(&(pop)->u[i]);
+            }
+          }
+        }
+        
+        ss << this->get_module_name() << "_" << this->id;
+        ss.str("");
+        ss << key << "_u";
+        info->variable_map[ss.str()] = &(pop)->u; 
+        ss.str("");
+        
 
         info->pop_models[pop->id] = pop;
         model->pop_models[pop->id] = pop;

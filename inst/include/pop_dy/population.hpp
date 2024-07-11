@@ -13,17 +13,20 @@ struct Population : public ModelObject<Type> {
 
   fims::Vector<Type> length;
   fims::Vector<Type> ages;
+  fims::Vector<Type> u;
 
   std::shared_ptr< VonBertalanffy<Type> > vb;
 
   Population() { 
     this->id = Population::id_g++;
   }
-
+  
 
   inline void CalculateLength(){ 
+    
     for(int i =0; i < ages.size(); i++){
-        length[i] = vb -> evaluate(ages[i]);
+      Rcout << "u, " << i << " is: " << u[i] << std::endl;
+        length[i] = vb -> evaluate(ages[i]) + u[i];
     }
   }
 

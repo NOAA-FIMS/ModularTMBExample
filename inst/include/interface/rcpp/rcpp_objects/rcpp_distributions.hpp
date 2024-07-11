@@ -387,6 +387,7 @@ public:
         ar1->key.resize(this->key.size());
         for(int i=0; i<key.size(); i++){
             ar1->key[i] = this-> key[i];
+          Rcout << "ar1 key is: " << ar1->key[i] << std::endl;
         }
         ar1->simulate_flag = this->simulate_flag;
         ar1->osa_flag = false;
@@ -394,6 +395,7 @@ public:
         ar1->observed_value.resize(this->observed_value.size());
         for(size_t i=0; i<this->observed_value.size(); i++){
             ar1->observed_value[i] = this->observed_value[i].value;
+          Rcout << "ar1 observed value is: " << ar1->observed_value[i] << std::endl;
             if(this->observed_value[i].is_random_effect){
                 model->random_effects.push_back(&(ar1)->observed_value[i]);
             }
@@ -403,6 +405,7 @@ public:
         ss << this->get_module_name() << "_" << this->id << "_log_sd";
         for(size_t i=0; i<this->log_sd.size(); i++){
             ar1->log_sd[i] = this->log_sd[i].value;
+          Rcout << "ar1 log_sd is: " << ar1->log_sd[i] << std::endl;
             if(this->log_sd[i].estimable){
                 model->parameters.push_back(&(ar1)->log_sd[i]);
                 model->pnames.push_back(ss.str());
@@ -414,6 +417,8 @@ public:
         ss << this->get_module_name() << "_" << this->id << "_logit_rho";
         for(size_t i=0; i<this->logit_rho.size(); i++){
             ar1->logit_rho[i] = this->logit_rho[i].value;
+          
+          Rcout << "ar1 logit_rho is: " << ar1->logit_rho[i] << std::endl;
             if(this->logit_rho[i].estimable){
                 model->parameters.push_back(&(ar1)->logit_rho[i]);
                 model->pnames.push_back(ss.str());
@@ -425,6 +430,7 @@ public:
         ss << this->get_module_name() << "_" << this->id << "_rho";
         for(size_t i=0; i<this->rho.size(); i++){
             ar1->rho[i] = this->rho[i].value;
+          Rcout << "ar1 rho is: " << ar1->rho[i] << std::endl;
             if(this->rho[i].estimable){
                 model->parameters.push_back(&(ar1)->rho[i]);
                 model->pnames.push_back(ss.str());
@@ -434,6 +440,9 @@ public:
     
         
         model->density_components[ar1->id] = ar1;
+       // Rcout << "inside rcpp_distribution, model rho is: " << model->density_components[ar1->id]->rho[0] << std::endl;
+        Rcout << "inside rcpp_distribution, ar1 rho is: " << ar1 -> rho[0] << std::endl;
+        
         info->density_components[ar1->id] = ar1;
         return true;
     }
@@ -458,7 +467,7 @@ public:
      * Update the model parameter values and finalize. Sets the parameter values and evaluates the
      * portable model once and transfers values back to the Rcpp interface.
      */
-    void finalize(Rcpp::NumericVector v) {
+    void finalize(Rcpp::NumericVector v, Rcpp::NumericVector re) {
         
         std::shared_ptr< Model<double> > model = Model<double>::getInstance();
         std::shared_ptr<DensityComponentBase<double> > density_components_base = model->density_components[this->id];
@@ -466,6 +475,7 @@ public:
 
         for (int i = 0; i < v.size(); i++) {
             (*model->parameters[i]) = v[i];
+            (*model->random_effects[i]) = re[i];
         }
 
         double f = model->evaluate();

@@ -33,7 +33,15 @@ Type objective_function<Type>::operator()(){
     DATA_VECTOR(y);
     DATA_VECTOR_INDICATOR(keep,y);
     //get the parameter values
-    PARAMETER_VECTOR(p)
+    PARAMETER_VECTOR(p);
+    PARAMETER_VECTOR(re);
+    
+    Rcout << "inside cpp, model data size is: " << model->data.size() << std::endl;
+    Rcout << "inside cpp, y size is: " << y.size() << std::endl;
+    Rcout << "inside cpp, model parameter size is: " << model->parameters.size() << std::endl;
+    Rcout << "inside cpp, p size is: " << p.size() << std::endl;
+    Rcout << "inside cpp, model random effects size is: " << model->random_effects.size() << std::endl;
+    Rcout << "inside cpp, re size is: " << re.size() << std::endl;;
 
     //update the data values for type Type
     for(int i =0; i < model->data.size(); i++){
@@ -43,6 +51,9 @@ Type objective_function<Type>::operator()(){
     //update the parameter values for type Type
     for(int i =0; i < model->parameters.size(); i++){
         *model->parameters[i] = p[i];
+    }
+    for(int i =0; i < model->random_effects.size(); i++){
+      *model->random_effects[i] = re[i];
     }
 
     model -> of = this;

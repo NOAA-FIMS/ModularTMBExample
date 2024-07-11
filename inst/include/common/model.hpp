@@ -63,11 +63,8 @@ class Model{
   Type evaluate(){
     Type jnll = 0.0;
 
-    this->info->setup_population();
-    
     //maybe here, setup functions can take a simulate flag and simulation can be controlled from model
     //setup pointers for priors
-    this->info->setup_priors();
      for(density_components_iterator it = this->density_components.begin(); it!= this->density_components.end(); ++it){
       std::shared_ptr<DensityComponentBase<Type> > n = (*it).second;
       #ifdef TMB_MODEL
@@ -80,16 +77,17 @@ class Model{
 
     
     //setup pointers for random effects
-    info->setup_random_effects();
     //evaluate nlls for priors and random effects
      for(density_components_iterator it = this->density_components.begin(); it!= this->density_components.end(); ++it){
       std::shared_ptr<DensityComponentBase<Type> > n = (*it).second;
       #ifdef TMB_MODEL
         n->of = this->of;
       #endif
-      if(n->input_type == "random_effects"){
+        Rcout << "inside model, just before re evaluate" << std::endl;
+      if(n->input_type == "re"){
         jnll -= n->evaluate();
       }
+      Rcout << "inside model, just after re evaluate" << std::endl;
     }
     
     for (pop_iterator it = this->pop_models.begin();
@@ -97,7 +95,6 @@ class Model{
       std::shared_ptr<Population<Type> > pop = (*it).second;
       pop->evaluate(); 
     }
-    this->info->setup_data();
     for(density_components_iterator it = this->density_components.begin(); it!= this->density_components.end(); ++it){
       std::shared_ptr<DensityComponentBase<Type> > n = (*it).second;
       #ifdef TMB_MODEL

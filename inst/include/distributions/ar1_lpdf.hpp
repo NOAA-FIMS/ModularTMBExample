@@ -25,13 +25,16 @@ struct AR1LPDF : public DensityComponentBase<Type> {
     virtual ~AR1LPDF() {}
 
     virtual const Type evaluate(){
-        //stationarity assumption: -1>rho<1
-        //randomwalk assumption: rho = 1
-        if(rho[0] != 1){
+      Rcout << "AR1 observed size is: " << this->observed_value.size() << std::endl;
+      Rcout << "AR1 sd is: " << sd[0] << std::endl;
+      Rcout << "AR1 rho is: " << rho[0] << std::endl;
+      if(rho[0] != 1){
             rho[0] = 1 / (1 + exp(-logit_rho[0])) * 2 - 1;
         }
 
         sd[0] = exp(log_sd[0]);
+        Rcout << "AR1 sd is: " << sd[0] << std::endl;
+        Rcout << "AR1 rho is:" << rho[0] << std::endl;
         log_likelihood = -density::SCALE(density::AR1(rho[0]), sd[0])(this->observed_value);
         this->log_likelihood_vec[0] = log_likelihood;
         

@@ -13,6 +13,27 @@ bool CreateModel(){
        i++) {
     RcppInterfaceBase::interface_objects[i]->prepare();
   }
+  
+  // base model
+  std::shared_ptr<Information<TMB_FIMS_REAL_TYPE>> d0 =
+    Information<TMB_FIMS_REAL_TYPE>::getInstance();
+  d0->CreateModel();
+  
+  // first-order derivative
+  std::shared_ptr<Information<TMB_FIMS_FIRST_ORDER>> d1 =
+    Information<TMB_FIMS_FIRST_ORDER>::getInstance();
+  d1->CreateModel();
+  
+  // second-order derivative
+  std::shared_ptr<Information<TMB_FIMS_SECOND_ORDER>> d2 =
+    Information<TMB_FIMS_SECOND_ORDER>::getInstance();
+  d2->CreateModel();
+  
+  // third-order derivative
+  std::shared_ptr<Information<TMB_FIMS_THIRD_ORDER>> d3 =
+    Information<TMB_FIMS_THIRD_ORDER>::getInstance();
+  d3->CreateModel();
+  
   return true;
 }
 
@@ -147,6 +168,7 @@ RCPP_MODULE(growth) {
     Rcpp::class_<PopulationInterface>("Population")
     .constructor()
     .field("ages", &PopulationInterface::ages)
+    .field("u", &PopulationInterface::u)
     .method("get_id", &PopulationInterface::get_id)
     .method("set_growth", &PopulationInterface::SetGrowth)
     .method("get_module_name", &PopulationInterface::get_module_name);
@@ -179,6 +201,7 @@ RCPP_MODULE(growth) {
       .field("observed_value", &AR1LPDFInterface::observed_value)
       .field("log_sd", &AR1LPDFInterface::log_sd)
       .field("logit_rho", &AR1LPDFInterface::logit_rho)
+      .field("rho", &AR1LPDFInterface::rho)
       .field("input_type", &AR1LPDFInterface::input_type)
       .field("log_likelihood_vec", &AR1LPDFInterface::log_likelihood_vec)
       .field("simulate_flag", &AR1LPDFInterface::simulate_flag)

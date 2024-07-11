@@ -8,6 +8,7 @@
 
 #include "../distributions/density_components_base.hpp"
 #include "../distributions/normal_lpdf.hpp"
+#include "../distributions/ar1_lpdf.hpp"
 #include "../pop_dy/population.hpp"
 #include "../pop_dy/von_bertalanffy.hpp"
 
@@ -91,12 +92,21 @@ class Information {
           variable_map_iterator vmit;
           vmit = this->variable_map.find(n->key[0]); 
           n->observed_value = *(*vmit).second;
-          
           for(size_t i=1; i<n->key.size(); i++){
             vmit = this->variable_map.find(n->key[i]); 
-            n->observed_value.insert(std::end(n->expected_value), 
+            n->observed_value.insert(std::end(n->observed_value), 
                                      std::begin(*(*vmit).second), std::end(*(*vmit).second));
           } 
+          std::shared_ptr<DensityComponentBase<Type> > density_components_base = density_components[n->id];
+          AR1LPDF<Type>* ar1 = (AR1LPDF<Type>*) density_components_base.get();
+          Rcout << "inside setup_re, obs.val size is: " << n->observed_value.size() << std::endl;
+          Rcout << "inside setup_re, rho is: " << ar1->rho[0] << std::endl;
+          for (pop_iterator it = this->pop_models.begin();
+               it != this->pop_models.end(); ++it) {
+               std::shared_ptr<Population<Type> > pop = (*it).second;
+            Rcout << "pop u size is: " << pop->u.size() << std::endl;
+            Rcout << "first pop u is: " << pop->u[0] << std::endl;
+          }
         }
       }
     }
@@ -116,6 +126,21 @@ class Information {
       }
     }
   }
+    
+    bool CreateModel(){
+      bool valid_model = true;
+      for (pop_iterator it = this->pop_models.begin(); it != this->pop_models.end();
+      ++it) {
+        setup_population();
+        setup_priors();
+        setup_random_effects();
+        Rcout << "setup_random_effects successful!" << std::endl;
+        setup_data();
+      }
+      return valid_model;
+    }
+    
+    
 };
 
 template<typename Type>
