@@ -78,7 +78,7 @@ public:
 
         ss << this->get_module_name() << "_" << this->id;// << "_" << this->r_name;
 
-         std::string key = ss.str();
+         std::string name_key = ss.str();
         ss.str("");
 
         vb->id = this->id;
@@ -87,8 +87,8 @@ public:
         vb->logk.resize(1);
         vb->logk[0] = this->logk.value;
         //need to set up maps even when parameters are not estimable (e.g. for penalties or random effects)
-        ss << key << "_logk";
-        info->variable_map[ss.str()] = &(vb)->logk;
+        ss << name_key << "_logk";
+        info->variable_map[this->logk.id] = &(vb)->logk;
 
         if (this->logk.estimable) {
             model->parameters.push_back(&(vb)->logk[0]);
@@ -99,8 +99,8 @@ public:
         //initialize l_inf
         vb->l_inf.resize(1);
         vb->l_inf[0] = this->l_inf.value;
-        ss << key << "_l_inf";
-        info->variable_map[ss.str()] = &(vb)->l_inf;
+        ss << name_key << "_l_inf";
+        info->variable_map[this->l_inf.id] = &(vb)->l_inf;
 
         if (this->l_inf.estimable) {
             model->parameters.push_back(&(vb)->l_inf[0]);
@@ -111,8 +111,8 @@ public:
         //initialize a_min
         vb->a_min.resize(1);
         vb->a_min[0] = this->a_min.value;
-        ss << key << "_a_min";
-        info->variable_map[ss.str()] = &(vb)->a_min;
+        ss << name_key << "_a_min";
+        info->variable_map[this->a_min.id] = &(vb)->a_min;
 
         if (this->a_min.estimable) {
             model->parameters.push_back(&(vb)->a_min[0]);

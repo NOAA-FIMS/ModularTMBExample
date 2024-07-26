@@ -164,10 +164,12 @@ RCPP_MODULE(growth) {
       .method("resize", &VariableVector::resize)
       .method("set_all_estimable", &VariableVector::set_all_estimable)
       .method("set_all_random_effects", &VariableVector::set_all_random_effects)
-      .method("fill", &VariableVector::fill);
+      .method("fill", &VariableVector::fill)
+      .method("get_id", &VariableVector::get_id);
     Rcpp::class_<PopulationInterface>("Population")
     .constructor()
     .field("ages", &PopulationInterface::ages)
+    .field("length", &PopulationInterface::length)
     .field("u", &PopulationInterface::u)
     .method("get_id", &PopulationInterface::get_id)
     .method("set_growth", &PopulationInterface::SetGrowth)

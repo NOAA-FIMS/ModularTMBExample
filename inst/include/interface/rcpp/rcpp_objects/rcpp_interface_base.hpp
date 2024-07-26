@@ -33,13 +33,11 @@ public:
     }
     
     Variable(double d) {
-        this->id = Variable::id_g++;
         Variable::parameters.push_back(this);
         this->value = d;
     }
     
     Variable(const Variable& other){
-        this->id = other.id;
         this->estimable = other.estimable;
         this->is_random_effect = other.is_random_effect;
         this->value = other.value;
@@ -91,6 +89,8 @@ public:
             this->storage_m.push_back(Rcpp::wrap(v));
         }
     }
+
+    virtual uint32_t get_id() { return this->id; }
     
     /**
      * Accessor. First index starts is zero.

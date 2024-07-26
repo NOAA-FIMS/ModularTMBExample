@@ -42,7 +42,7 @@ public:
     Rcpp::NumericVector ages;
     VariableVector u;
     uint32_t growth_id;        /**< id of the growth function*/
-
+    VariableVector length;
     
     PopulationInterface() : PopulationInterfaceBase() {}
     
@@ -75,15 +75,16 @@ public:
             pop->ages[i] = this->ages[i];
         }
         //Set Population length
-        pop->length.resize(ages.size());
-        std::stringstream ss;
+        pop->length.resizethis->ages.size());
+        /*std::stringstream ss;
         ss << this->get_module_name() << "_" << this->id;
         std::string key = ss.str();
         ss.str("");
         ss << key << "_length";
         info->variable_map[ss.str()] = &(pop)->length; 
         ss.str("");
-        
+        */
+       info->variable_map[this->length.id] = &(pop)->length;
         
         if(this->u.size() == 0){
           pop->u.resize(ages.size());
@@ -99,13 +100,14 @@ public:
             }
           }
         }
-        
+        /*
         ss << this->get_module_name() << "_" << this->id;
         ss.str("");
         ss << key << "_u";
         info->variable_map[ss.str()] = &(pop)->u; 
         ss.str("");
-        
+        */
+        info->variable_map[this->u.id] = &(pop)->u;
 
         info->pop_models[pop->id] = pop;
         model->pop_models[pop->id] = pop;

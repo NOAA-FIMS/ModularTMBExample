@@ -36,8 +36,8 @@ class Information {
         uint32_t, std::shared_ptr<VonBertalanffy<Type> > >::iterator
         vb_iterator;
 
-    std::unordered_map<std::string, fims::Vector<Type>* > variable_map;
-    typedef typename std::unordered_map<std::string, fims::Vector<Type>* >::iterator 
+    std::unordered_map<uint32_t, fims::Vector<Type>* > variable_map;
+    typedef typename std::unordered_map<uint32_t, fims::Vector<Type>* >::iterator 
       variable_map_iterator;
 
     

@@ -50,7 +50,7 @@ public:
     VariableVector log_sd;
     std::vector<double> log_likelihood_vec;
     std::string input_type;
-    std::vector<std::string> key;
+    std::vector<std::uint32_t> key;
 
     bool simulate_flag = false;
     bool osa_flag;
@@ -64,16 +64,12 @@ public:
         return "NormalLPDFInterface";
     }
     
-    void SetDistributionLinks(std::string input_type, Rcpp::IntegerVector module_id, 
-        Rcpp::StringVector module_name, Rcpp::StringVector name){
+    void SetDistributionLinks(std::string input_type, Rcpp::IntegerVector ids){
         this->input_type = input_type;
 
-        std::stringstream ss;
-        this->key.resize(module_id.size());
-        for(int i=0; i<module_id.size(); i++){
-            ss << module_name[i] << "_" << module_id[i] << "_" << name[i];
-            this->key[i] = ss.str();
-            ss.str("");
+        this->key.resize(ids.size());
+        for(size_t i=0; i<ids.size(); i++){
+            this->key[i] = ids[i];
         }
     }
 
@@ -194,7 +190,7 @@ public:
     VariableVector logit_phi;
     std::vector<double> log_likelihood_vec;
     std::string input_type;
-    std::vector<std::string> key;
+    std::vector<uint32_t> key;
 
     bool simulate_flag = false;
     
@@ -207,16 +203,12 @@ public:
         return "MVNormLPDFInterface";
     }
     
-    void SetDistributionLinks(std::string input_type, Rcpp::IntegerVector module_id, 
-        Rcpp::StringVector module_name, Rcpp::StringVector name){
+    void SetDistributionLinks(std::string input_type, Rcpp::IntegerVector ids){
         this->input_type = input_type;
 
-        std::stringstream ss;
-        this->key.resize(module_id.size());
-        for(int i=0; i<module_id.size(); i++){
-            ss << module_name[i] << "_" << module_id[i] << "_" << name[i];
-            this->key[i] = ss.str();
-            ss.str("");
+        this->key.resize(ids.size());
+        for(size_t i=0; i<ids.size(); i++){
+            this->key[i] = ids[i];
         }
     }
 
@@ -348,7 +340,7 @@ public:
     VariableVector rho;
     std::vector<double> log_likelihood_vec;
     std::string input_type = "re";
-    std::vector<std::string> key;
+    std::vector<uint32_t> key;
 
     bool simulate_flag = false;
     
@@ -361,16 +353,12 @@ public:
         return "AR1LPDFInterface";
     }
     
-    void SetDistributionLinks(std::string input_type, Rcpp::IntegerVector module_id, 
-        Rcpp::StringVector module_name, Rcpp::StringVector name){
+    void SetDistributionLinks(std::string input_type, Rcpp::IntegerVector ids){
         this->input_type = input_type;
 
-        std::stringstream ss;
-        this->key.resize(module_id.size());
-        for(int i=0; i<module_id.size(); i++){
-            ss << module_name[i] << "_" << module_id[i] << "_" << name[i];
-            this->key[i] = ss.str();
-            ss.str("");
+        this->key.resize(ids.size());
+        for(size_t i=0; i<ids.size(); i++){
+            this->key[i] = ids[i];
         }
     }
 

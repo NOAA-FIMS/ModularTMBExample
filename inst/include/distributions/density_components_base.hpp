@@ -13,7 +13,7 @@ fims::Vector<Type> expected_value;
 fims::Vector<Type> log_likelihood_vec;
 std::string input_type;
 bool simulate_flag;
-std::vector<std::string> key; 
+std::vector<uint32_t> key; 
 #ifdef TMB_MODEL
 ::objective_function<Type>
       *of;  
