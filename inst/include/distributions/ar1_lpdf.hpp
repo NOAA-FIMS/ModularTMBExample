@@ -32,10 +32,13 @@ struct AR1LPDF : public DensityComponentBase<Type> {
             rho[0] = 1 / (1 + exp(-logit_rho[0])) * 2 - 1;
         }
 
-        sd[0] = exp(log_sd[0]);
-        Rcout << "AR1 sd is: " << sd[0] << std::endl;
-        Rcout << "AR1 rho is:" << rho[0] << std::endl;
+        sd.resize(log_sd.size());
+        for(size_t i=0; i<log_sd.size(); i++){
+            sd[i] = exp(log_sd[i]);
+        }
+        
         log_likelihood = -density::SCALE(density::AR1(rho[0]), sd[0])(this->observed_value);
+        this->log_likelihood_vec.resize(1);
         this->log_likelihood_vec[0] = log_likelihood;
         
         return(log_likelihood);

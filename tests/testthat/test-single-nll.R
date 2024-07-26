@@ -60,7 +60,8 @@ CreateModel()
 
 #create a data list (data set above)
 Data <- list(
-  y = get_data_vector()
+  y = get_data_vector(),
+  re = get_random_effects_vector()
 )
 
 #create a parameter list

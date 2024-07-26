@@ -70,7 +70,8 @@ Data <- list(
 
 #create a parameter list
 Parameters <- list(
-  p = get_parameter_vector()
+  p = get_parameter_vector(),
+  re = get_random_effects()
 )
 
 obj <- TMB::MakeADFun(Data, Parameters, DLL="ModularTMBExample", trace = TRUE)
@@ -159,7 +160,7 @@ Pop$ages<-ages
 Pop$set_growth(vonB$get_id())
 init.re <- rnorm(nobs)
 Pop$u <- new(VariableVector, init.re, length(length.data))
-Pop$u$set_all_random_effects(TRUE) 
+#Pop$u$set_all_random_effects(TRUE) 
 
 DataLL <- new(NormalLPDF)
 
@@ -173,13 +174,13 @@ DataLL$simulate_flag <- TRUE
 DataLL$set_distribution_links("data", Pop$get_id(), Pop$get_module_name(), "length")
 
 Ar1LL <- new(AR1LPDF)
-Ar1LL$rho <- new(VariableVector, 1.0, 1)
+Ar1LL$rho <- new(VariableVector, .99, 1)
 Ar1LL$log_sd <- new(VariableVector, 1)
 Ar1LL$log_sd[1]$value <- 0 
 Ar1LL$log_sd[1]$estimable <- TRUE
 Ar1LL$input_type <- "re"
 Ar1LL$observed_value <- new(VariableVector, rep(0, nobs), nobs)
-
+Ar1LL$observed_value$set_all_random_effects(TRUE)
 Ar1LL$set_distribution_links("re", Pop$get_id(), Pop$get_module_name(), "u")
 
 

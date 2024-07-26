@@ -93,7 +93,7 @@ public:
         } else {
           pop->u.resize(this->u.size());
           for(int i =0; i < this->u.size(); i++){
-            pop->u[i] = this->u[i];
+            pop->u[i] = this->u[i].value;
             if(this->u[i].is_random_effect){
               model->random_effects.push_back(&(pop)->u[i]);
             }
