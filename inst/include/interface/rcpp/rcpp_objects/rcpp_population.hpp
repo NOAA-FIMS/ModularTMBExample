@@ -75,7 +75,7 @@ public:
             pop->ages[i] = this->ages[i];
         }
         //Set Population length
-        pop->length.resizethis->ages.size());
+        pop->length.resize(this->ages.size());
         /*std::stringstream ss;
         ss << this->get_module_name() << "_" << this->id;
         std::string key = ss.str();
