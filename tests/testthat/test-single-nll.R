@@ -24,16 +24,16 @@ clear()
 vonB<-new(vonBertalanffy)
 
 #initialize k
-vonB$logk$value<-log(k)
-vonB$logk$estimable<-TRUE
+vonB$logk$value <- 0
+vonB$logk$estimable <- TRUE
 
 #initialize a_min
-vonB$a_min$value<-a_min
-vonB$a_min$estimable<-FALSE
+vonB$a_min$value <- a_min
+vonB$a_min$estimable <- FALSE
 
 #initialize l_inf
-vonB$l_inf$value<-max(length.data)
-vonB$l_inf$estimable<-TRUE
+vonB$l_inf$value <- max(length.data)
+vonB$l_inf$estimable <- FALSE
 
 #set data
 Pop <- new(Population) 
@@ -51,7 +51,7 @@ DataLL$log_sd[1]$estimable <- TRUE
 DataLL$input_type <- "data"
 DataLL$simulate_flag <- TRUE 
 paste0(Pop$get_module_name(), "_", Pop$get_id(), "_length")
-DataLL$set_distribution_links("data", Pop$get_id(), Pop$get_module_name(), "length")
+DataLL$set_distribution_links("data", Pop$length$get_id())
 
 
 #prepare for interfacing with TMB
@@ -60,13 +60,13 @@ CreateModel()
 
 #create a data list (data set above)
 Data <- list(
-  y = get_data_vector(),
-  re = get_random_effects_vector()
+  y = get_data_vector()
 )
 
 #create a parameter list
 Parameters <- list(
-  p = get_parameter_vector()
+  p = get_parameter_vector(),
+  re = get_random_effects_vector()
 )
 
 obj <- TMB::MakeADFun(Data, Parameters, DLL="ModularTMBExample", trace = TRUE)

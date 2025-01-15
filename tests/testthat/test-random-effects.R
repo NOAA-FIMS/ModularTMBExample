@@ -56,7 +56,7 @@ DataLL$log_sd[1]$estimable <- TRUE
 DataLL$input_type <- "data"
 DataLL$simulate_flag <- TRUE 
 paste0(Pop$get_module_name(), "_", Pop$get_id(), "_length")
-DataLL$set_distribution_links("data", Pop$get_id(), Pop$get_module_name(), "length")
+DataLL$set_distribution_links("data",Pop$length$get_id())
 
 
 #prepare for interfacing with TMB
@@ -71,7 +71,7 @@ Data <- list(
 #create a parameter list
 Parameters <- list(
   p = get_parameter_vector(),
-  re = get_random_effects()
+  re = get_random_effects_vector()
 )
 
 obj <- TMB::MakeADFun(Data, Parameters, DLL="ModularTMBExample", trace = TRUE)

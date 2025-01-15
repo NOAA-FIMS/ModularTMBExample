@@ -13,27 +13,6 @@ bool CreateModel(){
        i++) {
     RcppInterfaceBase::interface_objects[i]->prepare();
   }
-  
-  // base model
-  std::shared_ptr<Information<TMB_FIMS_REAL_TYPE>> d0 =
-    Information<TMB_FIMS_REAL_TYPE>::getInstance();
-  d0->CreateModel();
-  
-  // first-order derivative
-  std::shared_ptr<Information<TMB_FIMS_FIRST_ORDER>> d1 =
-    Information<TMB_FIMS_FIRST_ORDER>::getInstance();
-  d1->CreateModel();
-  
-  // second-order derivative
-  std::shared_ptr<Information<TMB_FIMS_SECOND_ORDER>> d2 =
-    Information<TMB_FIMS_SECOND_ORDER>::getInstance();
-  d2->CreateModel();
-  
-  // third-order derivative
-  std::shared_ptr<Information<TMB_FIMS_THIRD_ORDER>> d3 =
-    Information<TMB_FIMS_THIRD_ORDER>::getInstance();
-  d3->CreateModel();
-  
   return true;
 }
 

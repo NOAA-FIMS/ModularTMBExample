@@ -127,18 +127,6 @@ class Information {
     }
   }
     
-    bool CreateModel(){
-      bool valid_model = true;
-      for (pop_iterator it = this->pop_models.begin(); it != this->pop_models.end();
-      ++it) {
-        setup_population();
-        setup_priors();
-        setup_random_effects();
-        Rcout << "setup_random_effects successful!" << std::endl;
-        setup_data();
-      }
-      return valid_model;
-    }
     
     
 };
